@@ -13,8 +13,11 @@ func CreateUsersTable(db *sql.DB) error {
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         uuid TEXT UNIQUE NOT NULL,
-        username TEXT UNIQUE NOT NULL,
-        email TEXT UNIQUE NOT NULL,
+        nickname TEXT UNIQUE NOT NULL,
+		age INTEGER NOT NULL,
+		gender TEXT NOT NULL,
+		first_name TEXT NOT NULL,
+		last_name TEXT NOT NULL,
         password TEXT NOT NULL
     );`
 	if _, err := db.Exec(query); err != nil {
