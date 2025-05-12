@@ -17,6 +17,7 @@ func CreateUsersTable(db *sql.DB) error {
 		age INTEGER NOT NULL,
 		gender TEXT NOT NULL,
 		first_name TEXT NOT NULL,
+		email TEXT UNIQUE NOT NULL,
 		last_name TEXT NOT NULL,
         password TEXT NOT NULL
     );`
