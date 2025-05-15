@@ -113,7 +113,9 @@ func StartDbConnection(database_file_path string) error {
 	if err = CreateCommentsTable(Db); err != nil {
 		return err
 	}
-
+    if err = CreatePrivateMessages(Db); err != nil {
+		return err
+	}
 	fmt.Println("[SUCCESS]: Connected to the SQLite database!", nil)
 	return nil
 }
