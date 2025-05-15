@@ -1,6 +1,6 @@
 package main
 
-import "real-time-forum/backend"
+import "real-time-forum/backend/database"
 
 func main() {
 	database.Init()
