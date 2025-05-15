@@ -37,10 +37,9 @@ func Init() {
 
 	err := StartDbConnection(databaseFilePath)
 	if err != nil {
-		fmt.Errorf("|starting database connection|%v", err)
+		fmt.Printf("|starting database connection|%v", err)
 		os.Exit(1)
 	}
-
 }
 
 var Db *sql.DB
@@ -77,7 +76,9 @@ func StartDbConnection(database_file_path string) error {
 	if err = CreateCommentsTable(Db); err != nil {
 		return err
 	}
-
+    if err = CreatePrivateMessages(Db); err != nil {
+		return err
+	}
 	fmt.Println("[SUCCESS]: Connected to the SQLite database!", nil)
 	return nil
 }
