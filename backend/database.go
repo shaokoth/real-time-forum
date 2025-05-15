@@ -74,10 +74,9 @@ func Init() {
 
 	err := StartDbConnection(databaseFilePath)
 	if err != nil {
-		fmt.Errorf("|starting database connection|%v", err)
+		fmt.Printf("|starting database connection|%v", err)
 		os.Exit(1)
 	}
-
 }
 
 var Db *sql.DB
