@@ -26,7 +26,7 @@ func CredentialExists(db *sql.DB, credential string) bool {
 	var count int
 	err := db.QueryRow(query, credential, credential).Scan(&count)
 	if err != nil {
-		fmt.Errorf("|credential exist| ---> {%v}", err)
+		fmt.Printf("|credential exist| ---> {%v}", err)
 		return false
 	}
 	return count > 0
@@ -40,7 +40,7 @@ cookie present in the header, within the request =====
 func ValidateSession(r *http.Request) (bool, string) {
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
-		fmt.Errorf("|validate session| ---> no session cookie found")
+		fmt.Printf("|validate session| ---> no session cookie found")
 		return false, ""
 	}
 
@@ -51,16 +51,16 @@ func ValidateSession(r *http.Request) (bool, string) {
 
 	err = database.Db.QueryRow("SELECT user_id, expires_at FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID, &expiresAt)
 	if err != nil {
-		fmt.Errorf("|validate session| ---> {%v}", err)
+		fmt.Printf("|validate session| ---> {%v}", err)
 		return false, ""
 	}
 
 	if time.Now().After(expiresAt) {
-		fmt.Errorf("session expired for user %s", userID)
+		fmt.Printf("session expired for user %s", userID)
 		return false, ""
 	}
 
-	fmt.Sprintf("[SUCCESS]: Session valid for user: %s", userID)
+	fmt.Printf("[SUCCESS]: Session valid for user: %s", userID)
 	return true, userID
 }
 

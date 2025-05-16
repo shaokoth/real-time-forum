@@ -16,7 +16,7 @@ type User struct {
 	FirstName string    `json:"firstName"`
 	LastName  string    `json:"lastName"`
 	Email     string    `json:"email"`
-	Password  string    `json:"-"` // Passwords should never be sent to clients
+	Password  string    `json:"Password"`
 	CreatedAt time.Time `json:"createdAt"`
 	IsOnline  bool      `json:"isOnline"`
 }
@@ -80,10 +80,10 @@ type Image struct {
 }
 
 // =====  hashes the user's password before storing it ====
-func (user *Users) HashPassword() error {
+func (user *User) HashPassword() error {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		fmt.Errorf("|hashpassword method| ---> {%v}", err)
+		fmt.Printf("|hashpassword method| ---> {%v}", err)
 		return err
 	}
 	user.Password = string(hashed)
