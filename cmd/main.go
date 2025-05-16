@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -11,6 +12,7 @@ import (
 
 func main() {
 	database.Init()
+	defer database.Db.Close()
 
 	mux, err := routes.Routers()
 	if err != nil {
@@ -22,8 +24,7 @@ func main() {
 		port = "1995"
 	}
 
-	defer database.Db.Close()
-	
+	log.Println("server started on port:", port)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		fmt.Println("Error starting server")
 	}

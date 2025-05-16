@@ -14,7 +14,7 @@ func Routers() (*http.ServeMux, error) {
 	scriptServer := http.FileServer(http.Dir("frontend/js/"))
 	mux.Handle("/js/", http.StripPrefix("/js/", scriptServer))
 
-	mux.HandleFunc("/logout", handlers.RegisterUser)
+	mux.HandleFunc("/register", handlers.RegisterUser)
 
 	return mux, nil
 }
