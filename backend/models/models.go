@@ -83,7 +83,7 @@ type Image struct {
 func (user *Users) HashPassword() error {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		fmt.Errorf("|hashpassword method| ---> {%v}", err)
+		fmt.Printf("|hashpassword method| ---> {%v}", err)
 		return err
 	}
 	user.Password = string(hashed)
