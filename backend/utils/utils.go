@@ -5,12 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"sort"
-	"strings"
 	"time"
 
 	"real-time-forum/backend/database"
-	"real-time-forum/backend/models"
 )
 
 // ==============Validate email format==========
@@ -62,25 +59,4 @@ func ValidateSession(r *http.Request) (bool, string) {
 
 	fmt.Printf("[SUCCESS]: Session valid for user: %s", userID)
 	return true, userID
-}
-
-// =====The function to make all the categories as a string to be stored into the database===========
-func CombineCategory(category []string) string {
-	fmt.Println("[SUCCESS]: Combined the categories as a string to be stored into the database", nil)
-	return strings.Join(category, ", ")
-}
-
-// ==== The function will sort the array of comments or posts by time before they are martialled into a json object =====
-func OrderComments(comments []models.Comment) []models.Comment {
-	sort.Slice(comments, func(i, j int) bool {
-		return comments[i].CreatedAt.After(comments[j].CreatedAt)
-	})
-	return comments
-}
-
-func OrderPosts(posts []models.Post) []models.Post {
-	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].CreatedAt.After(posts[j].CreatedAt)
-	})
-	return posts
 }
