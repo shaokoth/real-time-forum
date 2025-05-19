@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signup Form</title>
+    <style>
+        body {
+            background-color: #EAEFF4;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #signup-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        h2, p {
+            color: #1D2B3A;
+        }
+
+        .input-field {
+            width: calc(100% - 24px);
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        .login-text {
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .login-link {
+            color: #1D2B3A;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        #signup-button {
+            background: #B13E10;
+            color: white;
+            padding: 14px;
+            width: 100%;
+            border: none;
+            border-radius: 45px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: #ff3e3e;
+            background-color: rgba(255, 62, 62, 0.1);
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            text-align: center;
+            border: 1px solid rgba(255, 62, 62, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="signup-container">
+        <h2>Sign Up</h2>
+        <p>Welcome to The Forum Platform!</p>
+
+        <form id="signup-form">
+            <input type="text" name="nickname" placeholder="Nickname" class="input-field" required>
+            <input type="text" name="firstName" placeholder="First Name" class="input-field" required>
+            <input type="text" name="lastName" placeholder="Last Name" class="input-field" required>
+            <input type="number" name="age" placeholder="Age" class="input-field" min="13" max="120" required>
+
+            <select name="gender" class="input-field" required>
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="non-binary">Non-binary</option>
+                <option value="prefer-not-to-say">Prefer not to say</option>
+            </select>
+
+            <input type="email" name="email" placeholder="Your Email" class="input-field" required>
+
+            <div class="password-wrapper">
+                <input type="password" name="password" placeholder="Password" class="input-field" required>
+                <span class="icon">🔒</span>
+            </div>
+
+            <div class="password-wrapper">
+                <input type="password" name="confirm_password" placeholder="Confirm Password" class="input-field" required>
+                <span class="icon">🔒</span>
+            </div>
+
+            <p class="login-text">Already have an account? <a href="/login" class="login-link">Log in</a></p>
+
+            <button type="submit" id="signup-button">Register</button>
+        </form>
+
+        <div id="message"></div>
+    </div>
+
+    <script>
+        document.getElementById('signup-form').addEventListener('submit', async function (e) {
+            e.preventDefault(); // Prevent default form submission
+
+            const form = e.target;
+            const data = {
+                nickname: form.nickname.value,
+                firstName: form.firstName.value,
+                lastName: form.lastName.value,
+                age: parseInt(form.age.value, 10),
+                gender: form.gender.value,
+                email: form.email.value,
+                password: form.password.value,
+                // confirm_password can be checked on the frontend
+            };
+
+            const response = await fetch('/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const messageDiv = document.getElementById('message');
+            if (response.ok) {
+                messageDiv.textContent = 'Registration successful! Redirecting...';
+                setTimeout(() => window.location.href = '/login', 2000);
+            } else {
+                const errorText = await response.text();
+                messageDiv.textContent = 'Error: ' + errorText;
+                messageDiv.className = 'error-message';
+            }
+        });
+    </script>
+</body>
+
+</html>
