@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"real-time-forum/backend/database"
+	"real-time-forum/backend/models"
 )
 
 // ==============Validate email format==========
@@ -59,4 +60,35 @@ func ValidateSession(r *http.Request) (bool, string) {
 
 	fmt.Printf("[SUCCESS]: Session valid for user: %s", userID)
 	return true, userID
+}
+
+// getUserFromSession gets a user from a session ID
+func getUserFromSession(sessionID string) (*models.User, error) {
+	var userID int
+	var expiresAt time.Time
+
+	// Get the user ID from the session
+	err := database.Db.QueryRow("SELECT user_id, expires_at FROM sessions WHERE id = ?", sessionID).Scan(&userID, &expiresAt)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if the session is expired
+	if time.Now().After(expiresAt) {
+		database.Db.Exec("DELETE FROM sessions WHERE id = ?", sessionID)
+		return nil, sql.ErrNoRows
+	}
+
+	// Get the user information
+	var user models.User
+	err = database.Db.QueryRow(
+		"SELECT id, nickname, age, gender, first_name, last_name, email, created_at FROM users WHERE id = ?",
+		userID,
+	).Scan(&user.ID, &user.Nickname, &user.Age, &user.Gender, &user.FirstName, &user.LastName, &user.Email, &user.CreatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
