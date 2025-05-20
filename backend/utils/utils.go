@@ -63,7 +63,7 @@ func ValidateSession(r *http.Request) (bool, string) {
 }
 
 // getUserFromSession gets a user from a session ID
-func getUserFromSession(sessionID string) (*models.User, error) {
+func GetUserFromSession(sessionID string) (*models.User, error) {
 	var userID int
 	var expiresAt time.Time
 
