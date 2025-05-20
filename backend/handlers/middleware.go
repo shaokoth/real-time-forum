@@ -9,7 +9,6 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		valid, userID := utils.ValidateSession(r)
 
 		if !valid {
-			// defer d.Db.Close()
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}

@@ -18,7 +18,7 @@ func CreateCommentsTable(db *sql.DB) error {
 	query := `
     CREATE TABLE IF NOT EXISTS comments (
         comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_uuid INTEGER NOT NULL,
+        user_uuid TEXT NOT NULL,
         post_id INTEGER NOT NULL,
         content TEXT NOT NULL,
         likes INTEGER DEFAULT 0,

@@ -16,6 +16,8 @@ func Routers() (*http.ServeMux, error) {
 	mux.Handle("/js/", http.StripPrefix("/js/", scriptServer))
 
 	mux.HandleFunc("/register", handlers.RegisterUser)
+	mux.HandleFunc("/login", handlers.HandleLogin)
+	mux.HandleFunc("/logout", handlers.LogoutUser)
 
 	return mux, nil
 }

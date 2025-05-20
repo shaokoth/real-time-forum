@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"sort"
-	"strings"
 	"time"
 
 	"real-time-forum/backend/database"
@@ -64,23 +62,33 @@ func ValidateSession(r *http.Request) (bool, string) {
 	return true, userID
 }
 
-// =====The function to make all the categories as a string to be stored into the database===========
-func CombineCategory(category []string) string {
-	fmt.Println("[SUCCESS]: Combined the categories as a string to be stored into the database", nil)
-	return strings.Join(category, ", ")
-}
+// getUserFromSession gets a user from a session ID
+func GetUserFromSession(sessionID string) (*models.User, error) {
+	var userID int
+	var expiresAt time.Time
 
-// ==== The function will sort the array of comments or posts by time before they are martialled into a json object =====
-func OrderComments(comments []models.Comment) []models.Comment {
-	sort.Slice(comments, func(i, j int) bool {
-		return comments[i].CreatedAt.After(comments[j].CreatedAt)
-	})
-	return comments
-}
+	// Get the user ID from the session
+	err := database.Db.QueryRow("SELECT user_id, expires_at FROM sessions WHERE id = ?", sessionID).Scan(&userID, &expiresAt)
+	if err != nil {
+		return nil, err
+	}
 
-func OrderPosts(posts []models.Post) []models.Post {
-	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].CreatedAt.After(posts[j].CreatedAt)
-	})
-	return posts
+	// Check if the session is expired
+	if time.Now().After(expiresAt) {
+		database.Db.Exec("DELETE FROM sessions WHERE id = ?", sessionID)
+		return nil, sql.ErrNoRows
+	}
+
+	// Get the user information
+	var user models.User
+	err = database.Db.QueryRow(
+		"SELECT id, nickname, age, gender, first_name, last_name, email, created_at FROM users WHERE id = ?",
+		userID,
+	).Scan(&user.ID, &user.Nickname, &user.Age, &user.Gender, &user.FirstName, &user.LastName, &user.Email, &user.CreatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }

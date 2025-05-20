@@ -70,7 +70,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	// Set session cookie
 	http.SetCookie(w, &http.Cookie{
-		Name:     "session_id",
+		Name:     "session_token",
 		Value:    sessionID,
 		Expires:  expiresAt,
 		HttpOnly: true,

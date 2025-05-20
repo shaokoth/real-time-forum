@@ -4,8 +4,16 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gorilla/websocket"
 	"golang.org/x/crypto/bcrypt"
 )
+
+// Client represents a connected client
+type Client struct {
+	UserID     int
+	Connection *websocket.Conn
+	Send       chan []byte
+}
 
 type User struct {
 	ID        int       `json:"id"`
@@ -38,29 +46,6 @@ type Post struct {
 	OwnerInitials string
 }
 
-type Categories struct {
-	All_Categories string
-	Technology     string
-	Health         string
-	Math           string
-	Nature         string
-	Science        string
-	Religion       string
-	Education      string
-	Politics       string
-	Fashion        string
-	Lifestyle      string
-	Sports         string
-	Arts           string
-}
-
-type Users struct {
-	Username string
-	Email    string
-	Password string
-}
-
-
 type Comment struct {
 	Comment_id int       `json:"comment_id"`
 	Post_id    string    `json:"post_id"`
@@ -70,12 +55,11 @@ type Comment struct {
 	Content    string    `json:"content"`
 }
 
-type Image struct {
-	ImageID   string    `json:"image_id"`
-	UserID    string    `json:"user_id"`
+type PrivateMessage struct {
+	ID        string    `json:"id"`
 	PostID    string    `json:"post_id"`
-	Filename  string    `json:"filename"`
-	Path      string    `json:"path"`
+	UserID    string    `json:"user_id"`
+	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
