@@ -79,7 +79,7 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		var post struct {
 			Title      string `json:"title"`
 			Content    string `json:"content"`
-			CategoryID int    `json:"categoryId"`
+			Categories []int  `json:"categories"`
 		}
 		err := json.NewDecoder(r.Body).Decode(&post)
 		if err != nil {
@@ -93,10 +93,23 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if len(post.Categories) == 0 {
+			http.Error(w, "At least one category is required", http.StatusBadRequest)
+			return
+		}
+
+		// Start a transaction
+		tx, err := database.Db.Begin()
+		if err != nil {
+			http.Error(w, "Error starting transaction", http.StatusInternalServerError)
+			return
+		}
+		defer tx.Rollback()
+
 		// Insert the post
-		result, err := database.Db.Exec(
-			"INSERT INTO posts (title, content, user_id, category_id) VALUES (?, ?, ?, ?)",
-			post.Title, post.Content, user.ID, post.CategoryID,
+		result, err := tx.Exec(
+			"INSERT INTO posts (title, content, user_id) VALUES (?, ?, ?)",
+			post.Title, post.Content, user.ID,
 		)
 		if err != nil {
 			http.Error(w, "Error creating post", http.StatusInternalServerError)
@@ -107,6 +120,24 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		postID, err := result.LastInsertId()
 		if err != nil {
 			http.Error(w, "Error getting post ID", http.StatusInternalServerError)
+			return
+		}
+
+		// Insert post categories
+		for _, categoryID := range post.Categories {
+			_, err := tx.Exec(
+				"INSERT INTO post_categories (post_id, category_id) VALUES (?, ?)",
+				postID, categoryID,
+			)
+			if err != nil {
+				http.Error(w, "Error adding category to post", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		// Commit the transaction
+		if err := tx.Commit(); err != nil {
+			http.Error(w, "Error committing transaction", http.StatusInternalServerError)
 			return
 		}
 

@@ -1,20 +1,75 @@
 body {
-    background-color: #EAEFF4;
-    font-family: Arial, sans-serif;
+    font-family: 'IBM Plex Sans', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #DAE0E6;
+    color: #1A1A1B;
+    min-height: 100vh;
+}
+
+.forum {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+    background-color: #2ad300c7;
+    padding: 8px 16px;
+    border-radius: 12px;
+}
+
+.navbar {
+    background-color: white;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.login-button {
+    background: #0079D3;
+    color: white;
+    border: 1px solid #0079D3;
+    border-radius: 4px;
+    padding: 10px 30px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.signup-button {
+    background: #0079D3;
+    color: white;
+    border: 1px solid #0079D3;
+    border-radius: 4px;
+    padding: 10px 30px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.content-area {
+    padding: 20px;
     display: flex;
     justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
 }
 
 #container {
     background: white;
     padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
-    width: 90%;
-    max-width: 450px;
+    border-radius: 4px;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
     text-align: center;
 }
 
@@ -26,9 +81,15 @@ h2, p {
     width: calc(100% - 24px);
     padding: 12px;
     margin-bottom: 12px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 16px;
+    border: 1px solid #EDEFF1;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: #FCFCFB;
+}
+
+.input-field:focus {
+    border-color: #0079D3;
+    outline: none;
 }
 
 .password-wrapper {
@@ -45,42 +106,61 @@ h2, p {
 
 .login-text {
     margin-top: 12px;
-    font-size: 14px;
+    font-size: 12px;
+    color: #7c7c7c;
 }
 
 .login-link {
-    color: #1D2B3A;
+    color: #0079D3;
     font-weight: bold;
     text-decoration: none;
     cursor: pointer;
 }
 
 #submit-button {
-    background: #B13E10;
+    background: #0079D3;
     color: white;
-    padding: 14px;
+    padding: 10px;
     width: 100%;
     border: none;
-    border-radius: 45px;
-    font-size: 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
     cursor: pointer;
     margin-top: 10px;
 }
 
 .error-message {
-    color: #ff3e3e;
-    background-color: rgba(255, 62, 62, 0.1);
+    color: #FF4500;
+    background-color: rgba(255, 69, 0, 0.1);
     padding: 10px;
     border-radius: 4px;
     margin-top: 10px;
     font-size: 14px;
-    border: 1px solid rgba(255, 62, 62, 0.2);
+    border: 1px solid rgba(255, 69, 0, 0.2);
 }
 
-.form-container {
+.form-container, .homepage-content {
     display: none;
 }
 
-.form-container.active {
+.form-container.active, .homepage-content.active {
     display: block;
+}
+
+.homepage-welcome {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.homepage-welcome h1 {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.homepage-welcome p {
+    font-size: 18px;
+    color: #7c7c7c;
+    max-width: 600px;
+    margin: 0 auto;
 }

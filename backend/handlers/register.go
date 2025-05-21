@@ -14,10 +14,6 @@ import (
 
 // Handles user registration
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		http.ServeFile(w, r, "./frontend/template/index.html")
-	}
-
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not Allowed", http.StatusMethodNotAllowed)
 		return
