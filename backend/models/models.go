@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Client represents a connected client
-type Client struct {
-	UserID     int
-	Connection *websocket.Conn
-	Send       chan []byte
+type Message struct {
+	Type       string      `json:"type"`
+	ID         string      `json:"id"`
+	Content    interface{} `json:"content"`
+	SenderID   string         `json:"sender_id"`
+	ReceiverID string         `json:"receiver_id"`
+	CreatedAt  time.Time   `json:"created_at"`
 }
 
 type User struct {
@@ -53,14 +54,6 @@ type Comment struct {
 	Likes      int       `json:"likes"`
 	Dislikes   int       `json:"dislikes"`
 	Content    string    `json:"content"`
-}
-
-type PrivateMessage struct {
-	ID        string    `json:"id"`
-	PostID    string    `json:"post_id"`
-	UserID    string    `json:"user_id"`
-	Content   string    `json:"content"`
-	CreatedAt time.Time `json:"created_at"`
 }
 
 // =====  hashes the user's password before storing it ====
