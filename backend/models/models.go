@@ -11,9 +11,17 @@ type Message struct {
 	Type       string      `json:"type"`
 	ID         string      `json:"id"`
 	Content    interface{} `json:"content"`
-	SenderID   string         `json:"sender_id"`
-	ReceiverID string         `json:"receiver_id"`
+	SenderID   string      `json:"sender_id"`
+	ReceiverID string      `json:"receiver_id"`
 	CreatedAt  time.Time   `json:"created_at"`
+}
+
+type Reaction struct {
+	ID       int  `json:"id"`
+	UserID   int  `json:"user_id"`
+	PostID   int  `json:"post_id,omitempty"`
+	CommentID int `json:"comment_id,omitempty"`
+	IsLike   bool `json:"is_like"`
 }
 
 type User struct {
@@ -30,12 +38,19 @@ type User struct {
 	IsOnline  bool      `json:"isOnline"`
 }
 
+type Category struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
 type Post struct {
 	CreatedAt     time.Time `json:"created_at"`
-	Categories    []string  `json:"category"`
+	Categories    []string  `json:"categories"`
+	CategoriesID  string    `json:"CategoriesID"`
 	Likes         int       `json:"likes"`
 	Title         string    `json:"title"`
 	Dislikes      int       `json:"dislikes"`
+	UserLiked     int       `json:"UserLiked"` // -1: dislike, 0: none, 1:like
 	CommentsCount int       `json:"comments_count"`
 	Comments      []Comment `json:"comments"`
 	Content       string    `json:"content"`
@@ -43,17 +58,16 @@ type Post struct {
 	Post_id       int       `json:"post_id"`
 	Filepath      string    `json:"filepath"`
 	Filename      string    `json:"filename"`
-	Owner         string
-	OwnerInitials string
 }
 
 type Comment struct {
 	Comment_id int       `json:"comment_id"`
-	Post_id    string    `json:"post_id"`
+	Post_id    int       `json:"post_id"`
 	CreatedAt  time.Time `json:"created_at"`
 	Likes      int       `json:"likes"`
 	Dislikes   int       `json:"dislikes"`
 	Content    string    `json:"content"`
+	UserLiked  int       `json:"UserLiked"`
 }
 
 // =====  hashes the user's password before storing it ====
