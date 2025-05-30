@@ -10,8 +10,11 @@ import (
 	"real-time-forum/backend/utils"
 )
 
-var mu sync.Mutex
-var activeUsers map[string]*models.User
+var (
+	mu          sync.Mutex
+	users       []models.User
+	// activeUsers map[string]*models.User
+)
 
 func HandleUsers(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -40,32 +43,13 @@ func HandleUsers(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	// Parse the users
-	var users []map[string]interface{}
 	for rows.Next() {
-		var user struct {
-			ID        int
-			Nickname  string
-			Email     string
-			FirstName string
-			LastName  string
-		}
 		err := rows.Scan(&user.ID, &user.Nickname, &user.Email, &user.FirstName, &user.LastName)
 		if err != nil {
 			http.Error(w, "Error parsing users", http.StatusInternalServerError)
 		}
 
-		// Check if user is online
-		mu.Lock()
-		_, isOnline := activeUsers[user.Nickname]
-		mu.Unlock()
-		users = append(users, map[string]interface{}{
-			"id":        user.ID,
-			"nickname":  user.Nickname,
-			"email":     user.Email,
-			"firstName": user.FirstName,
-			"lastName":  user.LastName,
-			"isOnline":  isOnline,
-		})
+	users = append(users, user)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(users)
