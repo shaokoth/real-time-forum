@@ -19,11 +19,10 @@ func Routers() (*http.ServeMux, error) {
 	mux.HandleFunc("/login", handlers.HandleLogin)
 	mux.HandleFunc("/logout", handlers.LogoutUser)
 
-	mux.HandleFunc("/ws", handlers.HandleWebSocket)
-	mux.HandleFunc("/posts", handlers.HandleWebSocket)
-	mux.HandleFunc("/users", handlers.HandleWebSocket)
-	mux.HandleFunc("/comments", handlers.HandleWebSocket)
-
+	mux.HandleFunc("/ws", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleWebSocket)))
+	mux.HandleFunc("/posts", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandlePosts)))
+	mux.HandleFunc("/users", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleUsers)))
+	mux.HandleFunc("/comments", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleComments)))
 
 	return mux, nil
 }
