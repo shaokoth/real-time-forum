@@ -9,15 +9,18 @@
 <body>
     <!-- Navbar with login/signup buttons -->
     <div class="navbar">
-        <a class="forum" href="/">REAL-TIME-FORUM</a>
+        <div class="left-section">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
+            <a class="forum" href="/">REAL-TIME-FORUM</a>
+        </div>
         {{if .IsLoggedIn}}
         <div class="logo">
            <div class="dropdown">
             <button class="dropbtn">
-                <img src="static/images/user.png" alt="User Icon" class="user-icon">
+                <img src="static/image/user.png" alt="User Icon" class="user-icon">
             </button>
             <div class="dropdown-content">
-                <span>{{.nickname}}</span>
+                <span>{{.Nickname}}</span>
                 <a href="/logout">Logout</a>
             </div>
            </div>
@@ -36,6 +39,7 @@
                 <h1>Welcome to Real-Time Forum</h1>
             </div>
         </div>
+
         <!-- Login Form -->
         <div id="login-form" class="form-container">
             <div id="container">
@@ -54,6 +58,7 @@
                 </p>
             </div>
         </div>
+
         <!-- Signup Form -->
         <div id="signup-form" class="form-container">
             <div id="container">
