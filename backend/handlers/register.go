@@ -48,7 +48,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	UUID := u.String()
 
-	_, err = database.Db.Exec(`INSERT INTO users(uuid, nickname, age, gender, first_name, email, last_name, password)VALUES(?,?,?,?,?,?)`, UUID, user.Nickname, user.Age, user.Gender, user.FirstName, user.Email, user.LastName, user.Password)
+	_, err = database.Db.Exec(`INSERT INTO users(uuid, nickname, age, gender, first_name, email, last_name, password)VALUES(?,?,?,?,?,?,?,?)`, UUID, user.Nickname, user.Age, user.Gender, user.FirstName, user.Email, user.LastName, user.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
