@@ -19,10 +19,9 @@ func CreatePostsTable(db *sql.DB) error {
         post_id INTEGER  PRIMARY KEY AUTOINCREMENT DEFAULT 0,
 		user_uuid TEXT NOT NULL,
         title TEXT NOT NULL,
-        filename TEXT DEFAULT '',
         content TEXT NOT NULL,
         filepath TEXT DEFAULT '',
-        comments INTEGER DEFAULT 0,
+        filename TEXT DEFAULT '',
         category  TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_uuid) REFERENCES users(uuid)
