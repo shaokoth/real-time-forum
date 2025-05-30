@@ -40,7 +40,6 @@ func Init() {
 		fmt.Printf("|starting database connection|%v", err)
 		os.Exit(1)
 	}
-
 }
 
 var Db *sql.DB
@@ -62,11 +61,6 @@ func StartDbConnection(database_file_path string) error {
 	if err = CreateUsersTable(Db); err != nil {
 		return err
 	}
-
-	if err = CreateLikesDislikesTable(Db); err != nil {
-		return err
-	}
-
 	if err = CreateSessionsTable(Db); err != nil {
 		return err
 	}
@@ -75,6 +69,12 @@ func StartDbConnection(database_file_path string) error {
 		return err
 	}
 	if err = CreateCommentsTable(Db); err != nil {
+		return err
+	}
+	if err = CreateCategoriesTable(Db); err != nil {
+		return err
+	}
+	if err = CreatePrivateMessagesTable(Db); err != nil {
 		return err
 	}
 
