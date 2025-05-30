@@ -92,3 +92,86 @@ func GetUserFromSession(sessionID string) (*models.User, error) {
 
 	return &user, nil
 }
+
+func GetPostReaction(userId, postId int) (models.Reaction, error) {
+	var reaction models.Reaction
+	err := database.Db.QueryRow(
+		"SELECT id, user_id, post_id, is_like FROM post_likes WHERE user_id = ? AND post_id = ?",
+		userId, postId,
+	).Scan(&reaction.ID, &reaction.UserID, &reaction.PostID, &reaction.IsLike)
+	return reaction, err
+}
+
+func AddPostReaction(userId, postId int, isLike bool) error {
+	_, err := database.Db.Exec(
+		"INSERT INTO post_likes (user_id, post_id, is_like) VALUES (?, ?, ?)",
+		userId, postId, isLike,
+	)
+	return err
+}
+
+func UpdatePostReaction(userId, postId int, isLike bool) error {
+	_, err := database.Db.Exec(
+		"UPDATE post_likes SET is_like = ? WHERE user_id = ? AND post_id = ?",
+		isLike, userId, postId,
+	)
+	return err
+}
+
+func DeletePostReaction(userId, postId int) error {
+	_, err := database.Db.Exec(
+		"DELETE FROM post_likes WHERE user_id = ? AND post_id = ?",
+		userId, postId,
+	)
+	return err
+}
+
+func GetCommentLikesDislikes(commentId int) (int, int, error) {
+	var likes, dislikes int
+	err := database.Db.QueryRow(
+		"SELECT COUNT(*) FROM comment_likes WHERE comment_id = ? AND is_like = 1",
+		commentId,
+	).Scan(&likes)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	err = database.Db.QueryRow(
+		"SELECT COUNT(*) FROM comment_likes WHERE comment_id = ? AND is_like = 0",
+		commentId,
+	).Scan(&dislikes)
+	return likes, dislikes, err
+}
+
+func GetCommentReaction(userId, commentId int) (models.Reaction, error) {
+	var reaction models.Reaction
+	err := database.Db.QueryRow(
+		"SELECT id, user_id, comment_id, is_like FROM comment_likes WHERE user_id = ? AND comment_id = ?",
+		userId, commentId,
+	).Scan(&reaction.ID, &reaction.UserID, &reaction.CommentID, &reaction.IsLike)
+	return reaction, err
+}
+
+func AddCommentReaction(userId, commentId int, isLike bool) error {
+	_, err := database.Db.Exec(
+		"INSERT INTO comment_likes (user_id, comment_id, is_like) VALUES (?, ?, ?)",
+		userId, commentId, isLike,
+	)
+	return err
+}
+
+func UpdateCommentReaction(userId, commentId int, isLike bool) error {
+	_, err := database.Db.Exec(
+		"UPDATE comment_likes SET is_like = ? WHERE user_id = ? AND comment_id = ?",
+		isLike, userId, commentId,
+	)
+	return err
+}
+
+func DeleteCommentReaction(userId, commentId int) error {
+	_, err := database.Db.Exec(
+		"DELETE FROM comment_likes WHERE user_id = ? AND comment_id = ?",
+		userId, commentId,
+	)
+	return err
+}

@@ -22,5 +22,10 @@ func Routers() (*http.ServeMux, error) {
 	mux.HandleFunc("/api/reaction", handlers.HandleComments)
 	mux.HandleFunc("/api/posts/create", handlers.HandlePosts)
 
+	mux.HandleFunc("/ws", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleWebSocket)))
+	mux.HandleFunc("/posts", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandlePosts)))
+	mux.HandleFunc("/users", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleUsers)))
+	mux.HandleFunc("/comments", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleComments)))
+
 	return mux, nil
 }
