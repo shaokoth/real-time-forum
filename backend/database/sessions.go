@@ -20,7 +20,7 @@ func CreateSessionsTable(db *sql.DB) error {
 		user_id INTEGER NOT NULL,
         session_token TEXT UNIQUE NOT NULL,
         expires_at DATETIME NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        FOREIGN KEY (user_id) REFERENCES users(id)
     );`
 
 	if _, err := db.Exec(query); err != nil {
