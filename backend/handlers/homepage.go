@@ -30,7 +30,7 @@ func HandleHomepage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse and serve the template
-	tmpl, err := template.ParseFiles("/home/docker/real-time-forum/frontend/template/index.html")
+	tmpl, err := template.ParseFiles("frontend/template/index.html")
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
