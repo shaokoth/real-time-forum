@@ -31,9 +31,8 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if utils.CredentialExists(database.Db, user.Nickname) || utils.CredentialExists(database.Db, user.Email) {
-		//w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("nickname or email already exists"))
-		//http.Redirect(w, r, "/register", http.StatusSeeOther)
 		return
 	}
 	if err := user.HashPassword(); err != nil {
