@@ -8,12 +8,11 @@ body {
 }
 
 .forum {
-    font-size: 24px;
-    font-weight: bold;
+    font-size: 12px;
     color: white;
     text-decoration: none;
     background-color: #D34500;
-    padding: 8px 16px;
+    padding: 8px 12px;
     border-radius: 12px;
 }
 
@@ -77,7 +76,7 @@ body {
 }
 
 #container {
-    background: white;
+    background:lightgray;
     padding: 30px;
     border-radius: 4px;
     box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
@@ -227,4 +226,82 @@ h2, p {
 .dropdown:hover .dropbtn {
     background-color: #F6F7F8;
     border-radius: 50%;
+}
+
+/* theme toggle styles */
+:root {
+    --primary-color: #FF4500;
+    --text-color: #333;
+    --bg-color: #fff;
+    --card-bg: #fff;
+    --border-color: #ddd;
+}
+
+[data-theme="dark"] {
+    --primary-color: #FF5722;
+    --text-color: #fff;
+    --bg-color: #1a1a1b;
+    --card-bg: #272729;
+    --border-color: #444;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+    padding: 5px;
+}
+
+/* media responsive styles */
+@media screen and (max-width: 768px) {
+    .navbar {
+        height: auto;
+        padding: 10px;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .nav-buttons {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .login-button, .signup-button {
+        padding: 8px 20px;
+        font-size: 13px;
+    }
+
+    .content-area {
+        padding: 10px;
+    }
+
+    #container {
+        padding: 20px;
+        max-width: 100%;
+    }
+
+    .homepage-welcome h1 {
+        font-size: 24px;
+    }
+
+    .homepage-welcome p {
+        font-size: 16px;
+        padding: 0 15px;
+    }
+
+    .form-container {
+        width: 90%;
+        max-width: none;
+    }
+
+    .input-field {
+        font-size: 16px;
+   }
 }
