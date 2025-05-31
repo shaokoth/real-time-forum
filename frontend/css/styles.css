@@ -43,6 +43,7 @@ body {
     font-weight: bold;
     cursor: pointer;
     font-size: 14px;
+    margin-right: 20px;
 }
 
 .signup-button {
@@ -54,6 +55,7 @@ body {
     font-weight: bold;
     cursor: pointer;
     font-size: 14px;
+    margin-right: 80px;
 }
 
 .content-area {
