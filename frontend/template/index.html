@@ -32,12 +32,17 @@
         </div>
         {{end}}
     </div>
-    <!-- Homepage content -->
-    <div class="content-area">
-        <div id="homepage-content" class="homepage-content active">
-            <div class="homepage-welcome">
-                <h1>Welcome to Real-Time Forum</h1>
+
+   <!-- Homepage Content -->
+   <div id="homepage-content" class="active">
+    <div class="posts-section">
+        <!-- Posts Header -->
+        <div class="posts-header">
+            {{if .IsLoggedIn}}
+            <div class="create-post">
+                <button id="createPostBtn">Create New Post</button>
             </div>
+            {{end}}
         </div>
 
         <!-- Login Form -->
@@ -94,5 +99,6 @@
         </div>
     </div>
     <script src="../js/auth.js"></script>
+    <script src="../js/theme.js"></script>
 </body>
 </html>
