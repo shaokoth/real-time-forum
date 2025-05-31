@@ -18,7 +18,7 @@ body {
 }
 
 .navbar {
-    background-color: white;
+    background-color: #060203;
     height: 80px;
     display: flex;
     align-items: center;
@@ -63,6 +63,19 @@ body {
     justify-content: center;
 }
 
+.form-container {
+    display: none;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.form-container.active {
+    display: flex;
+}
+
 #container {
     background: white;
     padding: 30px;
@@ -71,6 +84,7 @@ body {
     width: 100%;
     max-width: 400px;
     text-align: center;
+    margin: 0 auto;
 }
 
 h2, p {
@@ -146,21 +160,4 @@ h2, p {
 
 .form-container.active, .homepage-content.active {
     display: block;
-}
-
-.homepage-welcome {
-    text-align: center;
-    margin-top: 40px;
-}
-
-.homepage-welcome h1 {
-    font-size: 32px;
-    margin-bottom: 10px;
-}
-
-.homepage-welcome p {
-    font-size: 18px;
-    color: #7c7c7c;
-    max-width: 600px;
-    margin: 0 auto;
 }
