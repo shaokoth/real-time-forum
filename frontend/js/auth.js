@@ -1,4 +1,3 @@
-
 function showLoginForm() {
     document.getElementById('homepage-content').classList.remove('active');
     document.getElementById('login-form').classList.add('active');
