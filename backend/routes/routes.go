@@ -22,13 +22,12 @@ func Routers() (*http.ServeMux, error) {
 	mux.HandleFunc("/register", handlers.RegisterUser)
 	mux.HandleFunc("/login", handlers.HandleLogin)
 	mux.HandleFunc("/logout", handlers.LogoutUser)
-	// mux.HandleFunc("/api/reaction", handlers.HandleComments)
-	// mux.HandleFunc("/api/posts/create", handlers.HandlePosts)
 
 	mux.HandleFunc("/ws", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleWebSocket)))
 	mux.HandleFunc("/posts", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandlePosts)))
 	mux.HandleFunc("/users", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleUsers)))
 	mux.HandleFunc("/comments", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleComments)))
+	mux.HandleFunc("/categories", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCategories)))
 
 	return mux, nil
 }
