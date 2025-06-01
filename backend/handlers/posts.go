@@ -31,10 +31,9 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		// Get all posts
 		rows, err := database.Db.Query(`
-			SELECT p.id, p.title, p.content, p.user_id, p.category_id, p.created_at, u.nickname, c.name
+			SELECT p.post_id, p.title, p.content, p.user_uuid, p.category, p.created_at
 			FROM posts p
-			JOIN users u ON p.user_id = u.id
-			JOIN categories c ON p.category_id = c.id
+			JOIN users u ON p.user_uuid = u.id
 			ORDER BY p.created_at DESC
 		`)
 		if err != nil {
@@ -45,7 +44,7 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 
 		// Parse the posts
 		for rows.Next() {
-			err = rows.Scan(&post.Post_id, &post.Title, &post.Content, &post.User_uuid, &post.Categories, &post.CategoriesID, &post.CreatedAt)
+			err = rows.Scan(&post.Post_id, &post.Title, &post.Content, &post.User_uuid, &post.Categories, &post.Category, &post.CreatedAt)
 			if err != nil {
 				http.Error(w, "Error parsing posts", http.StatusInternalServerError)
 				return
@@ -59,9 +58,9 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		// Create a new post
 		var post struct {
-			Title      string `json:"title"`
-			Content    string `json:"content"`
-			Categories []int  `json:"categories"`
+			Title   string `json:"title"`
+			Content string `json:"content"`
+			Numbers []int  `json:"categories"`
 		}
 		err := json.NewDecoder(r.Body).Decode(&post)
 		if err != nil {
@@ -69,13 +68,17 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		var Categories []Category
+		for _, v := range post.Numbers {
+			Categories = append(Categories, DefaultCategories[v-1])
+		}
 		// Validate inputs
 		if post.Title == "" || post.Content == "" {
 			http.Error(w, "Missing required fields", http.StatusBadRequest)
 			return
 		}
 
-		if len(post.Categories) == 0 {
+		if len(Categories) == 0 {
 			http.Error(w, "At least one category is required", http.StatusBadRequest)
 			return
 		}
@@ -90,8 +93,8 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 
 		// Insert the post
 		result, err := tx.Exec(
-			"INSERT INTO posts (title, content, user_id) VALUES (?, ?, ?)",
-			post.Title, post.Content, user.ID,
+			"INSERT INTO posts (title, content, user_uuid) VALUES (?, ?, ?)",
+			post.Title, post.Content, user.UUID,
 		)
 		if err != nil {
 			http.Error(w, "Error creating post", http.StatusInternalServerError)
@@ -106,10 +109,10 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Insert post categories
-		for _, categoryID := range post.Categories {
+		for _, name := range Categories {
 			_, err := tx.Exec(
-				"INSERT INTO post_categories (post_id, category_id) VALUES (?, ?)",
-				postID, categoryID,
+				"INSERT INTO post_categories (post_id, name) VALUES ( ?, ?)",
+				postID, name.Name,
 			)
 			if err != nil {
 				http.Error(w, "Error adding category to post", http.StatusInternalServerError)
@@ -195,7 +198,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 	type LikeRequest struct {
-		UserID int  `json:"user_id"`
+		// UserID int  `json:"user_id"`
 		PostID int  `json:"post_id"`
 		IsLike bool `json:"is_like"` // true = like, false = dislike
 	}
