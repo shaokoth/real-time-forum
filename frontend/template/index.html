@@ -35,14 +35,43 @@
 
    <!-- Homepage Content -->
    <div id="homepage-content" class="active">
+    <!-- Categories Section -->
+    <div class="categories-section">
+        <h2>Categories</h2>
+        <div id="categories-list" class="categories-grid">
+            <!-- Categories will be populated here -->
+        </div>
+    </div>
+
     <div class="posts-section">
         <!-- Posts Header -->
         <div class="posts-header">
             {{if .IsLoggedIn}}
             <div class="create-post">
-                <!-- <button id="createPostBtn">Create New Post</button> -->
+                <button id="createPostBtn" onclick="showCreatePostForm()">Create New Post</button>
             </div>
             {{end}}
+        </div>
+
+        <!-- Posts List -->
+        <div id="posts-list" class="posts-grid">
+            <!-- Posts will be populated here -->
+        </div>
+
+        <!-- Create Post Form -->
+        <div id="create-post-form" class="form-container" style="display: none;">
+            <div id="container">
+                <h2>Create New Post</h2>
+                <form id="newPostForm">
+                    <input type="text" name="title" placeholder="Post Title" class="input-field" required>
+                    <textarea name="content" placeholder="Post Content" class="input-field" required></textarea>
+                    <div id="categories-selection" class="categories-selection">
+                        <!-- Categories checkboxes will be populated here -->
+                    </div>
+                    <button type="submit" id="submit-button">Create Post</button>
+                </form>
+                <div id="create-post-error" class="error-message" style="display: none;"></div>
+            </div>
         </div>
 
         <!-- Login Form -->
@@ -99,6 +128,7 @@
         </div>
     </div>
 <script src="../js/auth.js"></script>
+<script src="../js/posts.js"></script>
 </body>
 <script src="../js/theme.js"></script>
 </html>
