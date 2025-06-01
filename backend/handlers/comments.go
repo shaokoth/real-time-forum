@@ -14,7 +14,7 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 	var comments []models.Comment
 	var comment models.Comment
 	// Check if user is logged in
-	cookie, err := r.Cookie("session_id")
+	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		http.Error(w, "Not logged in", http.StatusUnauthorized)
 		return
@@ -194,7 +194,7 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte("Disike removed"))
+				w.Write([]byte("Dislike removed"))
 				return
 			} else {
 				// User disliked - change to like
