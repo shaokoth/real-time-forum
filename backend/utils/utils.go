@@ -38,7 +38,6 @@ cookie present in the header, within the request =====
 func ValidateSession(r *http.Request) (bool, string) {
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
-		fmt.Printf("|validate session| ---> no session cookie found")
 		return false, ""
 	}
 
@@ -49,7 +48,6 @@ func ValidateSession(r *http.Request) (bool, string) {
 
 	err = database.Db.QueryRow("SELECT user_id, expires_at FROM sessions WHERE session_token = ?", cookie.Value).Scan(&userID, &expiresAt)
 	if err != nil {
-		fmt.Printf("|validate session| ---> {%v}", err)
 		return false, ""
 	}
 
@@ -58,7 +56,6 @@ func ValidateSession(r *http.Request) (bool, string) {
 		return false, ""
 	}
 
-	fmt.Printf("[SUCCESS]: Session valid for user: %s", userID)
 	return true, userID
 }
 
@@ -68,7 +65,7 @@ func GetUserFromSession(sessionID string) (*models.User, error) {
 	var expiresAt time.Time
 
 	// Get the user ID from the session
-	err := database.Db.QueryRow("SELECT user_id, expires_at FROM sessions WHERE id = ?", sessionID).Scan(&userID, &expiresAt)
+	err := database.Db.QueryRow("SELECT user_id, expires_at FROM sessions WHERE session_token = ?", sessionID).Scan(&userID, &expiresAt)
 	if err != nil {
 		return nil, err
 	}
@@ -82,10 +79,9 @@ func GetUserFromSession(sessionID string) (*models.User, error) {
 	// Get the user information
 	var user models.User
 	err = database.Db.QueryRow(
-		"SELECT id, nickname, age, gender, first_name, last_name, email, created_at FROM users WHERE id = ?",
+		"SELECT id, nickname, age, gender, first_name, last_name, email, uuid  FROM users WHERE id = ?",
 		userID,
-	).Scan(&user.ID, &user.Nickname, &user.Age, &user.Gender, &user.FirstName, &user.LastName, &user.Email, &user.CreatedAt)
-
+	).Scan(&user.ID, &user.Nickname, &user.Age, &user.Gender, &user.FirstName, &user.LastName, &user.Email, &user.UUID)
 	if err != nil {
 		return nil, err
 	}
