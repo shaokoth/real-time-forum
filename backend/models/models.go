@@ -46,7 +46,7 @@ type Category struct {
 type Post struct {
 	CreatedAt     time.Time `json:"created_at"`
 	Categories    []string  `json:"categories"`
-	CategoriesID  string    `json:"CategoriesID"`
+	Category  string    `json:"Category"`
 	Likes         int       `json:"likes"`
 	Title         string    `json:"title"`
 	Dislikes      int       `json:"dislikes"`
