@@ -71,13 +71,18 @@ func StartDbConnection(database_file_path string) error {
 	if err = CreateCommentsTable(Db); err != nil {
 		return err
 	}
-	if err = CreateCategoriesTable(Db); err != nil {
+	if err = CreatePostCategoriesTable(Db); err != nil {
 		return err
 	}
 	if err = CreatePrivateMessagesTable(Db); err != nil {
 		return err
 	}
+	if err = CreateCommentLikes(Db); err != nil {
+		return err
+	}
+	if err = CreatePostLikes(Db); err != nil {
+		return err
+	}
 
-	fmt.Println("[SUCCESS]: Connected to the SQLite database!", nil)
 	return nil
 }
