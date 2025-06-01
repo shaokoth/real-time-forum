@@ -17,7 +17,7 @@ func CreateCommentLikes(db *sql.DB) error {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (user_id, comment_id),
     FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (comment_id) REFERENCES comments (id)
+    FOREIGN KEY (comment_id) REFERENCES comments (comment_id)
 );`
 
 	if _, err := db.Exec(query); err != nil {
