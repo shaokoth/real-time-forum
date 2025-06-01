@@ -17,7 +17,7 @@ func CreatePostLikes(db *sql.DB) error {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (user_id, post_id),
     FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (post_id) REFERENCES posts (id)
+    FOREIGN KEY (post_id) REFERENCES posts (post_id)
 );`
 
 	if _, err := db.Exec(query); err != nil {
