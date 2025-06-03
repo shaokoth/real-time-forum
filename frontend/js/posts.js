@@ -45,19 +45,27 @@ function displayPosts(posts) {
     posts.forEach(post => {
         const postElement = document.createElement('div');
         postElement.className = 'post-card';
+        postElement.setAttribute('data-post-id', post.post_id);
         postElement.innerHTML = `
             <h3>${post.title}</h3>
             <p class="post-content">${post.content}</p>
             <div class="post-meta">
-                <span class="post-author">Posted by ${post.nickname}</span>
+                <span class="post-author">By ${post.nickname}</span>
                 <span class="post-date">${new Date(post.created_at).toLocaleDateString()}</span>
             </div>
             <div class="post-categories">
                 ${post.categories.map(cat => `<span class="category-tag">${cat}</span>`).join('')}
             </div>
             <div class="post-actions">
-                <button onclick="likePost(${post.post_id})" class="like-btn">👍</button>
-                <button onclick="dislikePost(${post.post_id})" class="dislike-btn">👎</button>
+                <button onclick="likePost(${post.post_id})" class="like-btn">👍 ${post.likes || 0}</button>
+                <button onclick="toggleComments(${post.post_id})" class="comment-btn">💬 Comments (${post.comments_count || 0})</button>
+            </div>
+            <div id="comments-section-${post.post_id}" class="comments-section" style="display: none;">
+                <div id="comments-${post.post_id}" class="comments-container"></div>
+                <form id="comment-form-${post.post_id}" class="comment-form">
+                    <textarea id="comment-input-${post.post_id}" placeholder="Write a comment..." required></textarea>
+                    <button type="submit">Post Comment</button>
+                </form>
             </div>
         `;
         postsList.appendChild(postElement);
@@ -73,12 +81,6 @@ async function filterPostsByCategory(categoryId) {
     } catch (error) {
         console.error('Error filtering posts:', error);
     }
-}
-
-// Show create post form
-function showCreatePostForm() {
-    document.getElementById('create-post-form').style.display = 'block';
-    populateCategoriesForPost();
 }
 
 // Populate categories for post creation
@@ -174,6 +176,41 @@ async function dislikePost(postId) {
         console.error('Error disliking post:', error);
     }
 }
+
+// Toggle comments section visibility
+function toggleComments(postId) {
+    const commentsSection = document.getElementById(`comments-section-${postId}`);
+    if (!commentsSection) return;
+
+    if (commentsSection.style.display === 'none') {
+        commentsSection.style.display = 'block';
+        initializeComments(postId);
+    } else {
+        commentsSection.style.display = 'none';
+    }
+}
+
+// Handle comment submission
+document.addEventListener('submit', async (e) => {
+    if (e.target.id && e.target.id.startsWith('comment-form-')) {
+        e.preventDefault();
+        const postId = e.target.id.split('-')[2];
+        const commentInput = document.getElementById(`comment-input-${postId}`);
+        const content = commentInput.value.trim();
+        
+        if (!content) {
+            alert('Please enter a comment');
+            return;
+        }
+
+        try {
+            await addComment(postId, content);
+            commentInput.value = '';
+        } catch (error) {
+            alert('Failed to post comment. Please try again.');
+        }
+    }
+});
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', () => {
