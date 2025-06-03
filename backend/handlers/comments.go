@@ -126,40 +126,40 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Check if user already reacted to this comment
-		existingReaction, err := utils.GetCommentReaction(user.ID, req.CommentID)
-		if err == nil {
-			if existingReaction.IsLike {
-				// User already liked - remove like
-				err = utils.DeleteCommentReaction(user.ID, req.CommentID)
-				if err != nil {
-					http.Error(w, "Failed to remove like", http.StatusInternalServerError)
-					return
-				}
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte("Like removed"))
-				return
-			} else {
-				// User disliked - change to like
-				err = utils.UpdateCommentReaction(user.ID, req.CommentID, true)
-				if err != nil {
-					http.Error(w, "Failed to update reaction", http.StatusInternalServerError)
-					return
-				}
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte("Dislike changed to like"))
+	existingReaction, err := utils.GetCommentReaction(user.ID, req.CommentID)
+	if err == nil {
+		if existingReaction.IsLike {
+			// User already liked - remove like
+			err = utils.DeleteCommentReaction(user.ID, req.CommentID)
+			if err != nil {
+				http.Error(w, "Failed to remove like", http.StatusInternalServerError)
 				return
 			}
-		}
-
-		// Add new like
-		err = utils.AddCommentReaction(user.ID, req.CommentID, true)
-		if err != nil {
-			http.Error(w, "Failed to add like", http.StatusInternalServerError)
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("Like removed"))
+			return
+		} else {
+			// User disliked - change to like
+			err = utils.UpdateCommentReaction(user.ID, req.CommentID, true)
+			if err != nil {
+				http.Error(w, "Failed to update reaction", http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("Dislike changed to like"))
 			return
 		}
+	}
 
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Comment liked"))
+	// Add new like
+	err = utils.AddCommentReaction(user.ID, req.CommentID, true)
+	if err != nil {
+		http.Error(w, "Failed to add like", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Comment liked"))
 }
 
 func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
@@ -184,38 +184,38 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Check if user already reacted to this comment
-		existingReaction, err := utils.GetCommentReaction(user.ID, req.CommentID)
-		if err == nil {
-			if existingReaction.IsLike {
-				// User already disliked - remove dislike
-				err = utils.DeleteCommentReaction(user.ID, req.CommentID)
-				if err != nil {
-					http.Error(w, "Failed to remove dislike", http.StatusInternalServerError)
-					return
-				}
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte("Dislike removed"))
-				return
-			} else {
-				// User disliked - change to like
-				err = utils.UpdateCommentReaction(user.ID, req.CommentID, false)
-				if err != nil {
-					http.Error(w, "Failed to update reaction", http.StatusInternalServerError)
-					return
-				}
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte("Like changed to dislike"))
+	existingReaction, err := utils.GetCommentReaction(user.ID, req.CommentID)
+	if err == nil {
+		if existingReaction.IsLike {
+			// User already disliked - remove dislike
+			err = utils.DeleteCommentReaction(user.ID, req.CommentID)
+			if err != nil {
+				http.Error(w, "Failed to remove dislike", http.StatusInternalServerError)
 				return
 			}
-		}
-
-		// Add new like
-		err = utils.AddCommentReaction(user.ID, req.CommentID, false)
-		if err != nil {
-			http.Error(w, "Failed to add dislike", http.StatusInternalServerError)
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("Dislike removed"))
+			return
+		} else {
+			// User disliked - change to like
+			err = utils.UpdateCommentReaction(user.ID, req.CommentID, false)
+			if err != nil {
+				http.Error(w, "Failed to update reaction", http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("Like changed to dislike"))
 			return
 		}
+	}
 
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Comment disliked"))
+	// Add new like
+	err = utils.AddCommentReaction(user.ID, req.CommentID, false)
+	if err != nil {
+		http.Error(w, "Failed to add dislike", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Comment disliked"))
 }
