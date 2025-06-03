@@ -1,20 +1,37 @@
+// Show login form as modal
 function showLoginForm() {
-    document.getElementById('homepage-content').classList.remove('active');
-    document.getElementById('login-form').classList.add('active');
-    document.getElementById('signup-form').classList.remove('active');
+    document.getElementById('login-form').style.display = 'flex';
+    document.getElementById('signup-form').style.display = 'none';
 }
 
+// Show signup form as modal
 function showSignupForm() {
-    document.getElementById('homepage-content').classList.remove('active');
-    document.getElementById('login-form').classList.remove('active');
-    document.getElementById('signup-form').classList.add('active');
+    document.getElementById('signup-form').style.display = 'flex';
+    document.getElementById('login-form').style.display = 'none';
 }
 
-function showHomepage() {
-    document.getElementById('homepage-content').classList.add('active');
-    document.getElementById('login-form').classList.remove('active');
-    document.getElementById('signup-form').classList.remove('active');
+// Close login form
+function closeL() {
+    document.getElementById('login-form').style.display = 'none';
 }
+
+// Close signup form
+function closeS() {
+    document.getElementById('signup-form').style.display = 'none';
+}
+
+// Close forms when clicking outside
+document.getElementById('login-form').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeL();
+    }
+});
+
+document.getElementById('signup-form').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeS();
+    }
+});
 
 // Login form handler
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
