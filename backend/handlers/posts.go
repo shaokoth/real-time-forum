@@ -3,37 +3,28 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"real-time-forum/backend/database"
 	"real-time-forum/backend/models"
 	"real-time-forum/backend/utils"
 )
 
-var (
-	posts []models.Post
-	post  models.Post
-)
-
 // Handles CRUD operations for posts
 func HandlePosts(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		http.Error(w, "Not logged in", http.StatusUnauthorized)
-		return
-	}
-
-	user, err := utils.GetUserFromSession(cookie.Value)
-	if err != nil {
-		http.Error(w, "Invalid session", http.StatusUnauthorized)
-		return
-	}
 	switch r.Method {
 	case "GET":
-		// Get all posts
+		// Get all posts - no authentication required
+		var posts []models.Post
 		rows, err := database.Db.Query(`
-			SELECT p.post_id, p.title, p.content, p.user_uuid, p.category, p.created_at
+			SELECT p.post_id, p.title, p.content, p.user_uuid, p.created_at,
+				   GROUP_CONCAT(pc.name) as categories,
+				   COALESCE(SUM(CASE WHEN pl.is_like = 1 THEN 1 ELSE 0 END), 0) as likes,
+				   COALESCE(SUM(CASE WHEN pl.is_like = 0 THEN 1 ELSE 0 END), 0) as dislikes
 			FROM posts p
-			JOIN users u ON p.user_uuid = u.id
+			LEFT JOIN post_categories pc ON p.post_id = pc.post_id
+			LEFT JOIN post_likes pl ON p.post_id = pl.post_id
+			GROUP BY p.post_id
 			ORDER BY p.created_at DESC
 		`)
 		if err != nil {
@@ -44,11 +35,21 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 
 		// Parse the posts
 		for rows.Next() {
-			err = rows.Scan(&post.Post_id, &post.Title, &post.Content, &post.User_uuid, &post.Categories, &post.Category, &post.CreatedAt)
+			var post models.Post
+			var categoriesStr string
+			err = rows.Scan(&post.Post_id, &post.Title, &post.Content, &post.User_uuid, &post.CreatedAt, &categoriesStr, &post.Likes, &post.Dislikes)
 			if err != nil {
 				http.Error(w, "Error parsing posts", http.StatusInternalServerError)
 				return
 			}
+
+			// Split categories string into array
+			if categoriesStr != "" {
+				post.Categories = strings.Split(categoriesStr, ",")
+			} else {
+				post.Categories = []string{}
+			}
+
 			posts = append(posts, post)
 		}
 		// Return the posts
@@ -56,13 +57,25 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(posts)
 
 	case "POST":
-		// Create a new post
+		// Create a new post - authentication required
+		cookie, err := r.Cookie("session_token")
+		if err != nil {
+			http.Error(w, "Not logged in", http.StatusUnauthorized)
+			return
+		}
+
+		user, err := utils.GetUserFromSession(cookie.Value)
+		if err != nil {
+			http.Error(w, "Invalid session", http.StatusUnauthorized)
+			return
+		}
+
 		var post struct {
 			Title   string `json:"title"`
 			Content string `json:"content"`
 			Numbers []int  `json:"categories"`
 		}
-		err := json.NewDecoder(r.Body).Decode(&post)
+		err = json.NewDecoder(r.Body).Decode(&post)
 		if err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
@@ -146,7 +159,11 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get user ID from session
-	cookie, _ := r.Cookie("session")
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		http.Error(w, "Not logged in", http.StatusUnauthorized)
+		return
+	}
 
 	user, err := utils.GetUserFromSession(cookie.Value)
 	if err != nil {
@@ -198,13 +215,17 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 	type LikeRequest struct {
-		// UserID int  `json:"user_id"`
+		UserID int  `json:"user_id"`
 		PostID int  `json:"post_id"`
 		IsLike bool `json:"is_like"` // true = like, false = dislike
 	}
 
 	// Get user ID from session
-	cookie, _ := r.Cookie("session")
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		http.Error(w, "Not logged in", http.StatusUnauthorized)
+		return
+	}
 
 	user, err := utils.GetUserFromSession(cookie.Value)
 	if err != nil {
