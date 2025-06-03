@@ -35,49 +35,58 @@
 
    <!-- Homepage Content -->
    <div id="homepage-content" class="active">
-    <!-- Categories Section -->
-    <div class="categories-section">
-        <h2>Categories</h2>
-        <div id="categories-list" class="categories-grid">
-            <!-- Categories will be populated here -->
-        </div>
-    </div>
-
-    <div class="posts-section">
-        <!-- Posts Header -->
-        <div class="posts-header">
-            {{if .IsLoggedIn}}
-            <div class="create-post">
-                <button id="createPostBtn" onclick="showCreatePostForm()">Create New Post</button>
+    <div class="main-layout">
+        <!-- Categories Section -->
+        <div class="categories-section">
+            <h2>Categories</h2>
+            <div id="categories-list" class="categories-grid">
+                <!-- Categories will be populated here -->
             </div>
-            {{end}}
         </div>
 
-        <!-- Posts List -->
-        <div id="posts-list" class="posts-grid">
-            <!-- Posts will be populated here -->
-        </div>
+        <!-- Posts Section -->
+        <div class="posts-section">
+            <!-- Posts Header -->
+            <div class="posts-header">
+                {{if .IsLoggedIn}}
+                <div class="create-post">
+                    <button id="createPostBtn" onclick="showCreatePostForm()">Create New Post</button>
+                </div>
+                {{end}}
+            </div>
 
-        <!-- Create Post Form -->
-        <div id="create-post-form" class="form-container" style="display: none;">
-            <div id="container">
-                <h2>Create New Post</h2>
-                <form id="newPostForm">
-                    <input type="text" name="title" placeholder="Post Title" class="input-field" required>
-                    <textarea name="content" placeholder="Post Content" class="input-field" required></textarea>
-                    <div id="categories-selection" class="categories-selection">
-                        <!-- Categories checkboxes will be populated here -->
+            <!-- Posts List -->
+            <div id="posts-list" class="posts-grid">
+                <!-- Posts will be populated here -->
+            </div>
+
+            <!-- Create Post Form -->
+            <div id="create-post-form" class="form-container" style="display: none;">
+                <div id="container">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0;">Create New Post</h2>
+                        <button onclick="closeCreatePostForm()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-color);">×</button>
                     </div>
-                    <button type="submit" id="submit-button">Create Post</button>
-                </form>
-                <div id="create-post-error" class="error-message" style="display: none;"></div>
+                    <form id="newPostForm">
+                        <input type="text" name="title" placeholder="Post Title" class="input-field" required>
+                        <textarea name="content" placeholder="Post Content" class="input-field" required></textarea>
+                        <div id="categories-selection" class="categories-selection">
+                            <!-- Categories checkboxes will be populated here -->
+                        </div>
+                        <button type="submit" id="submit-button">Create Post</button>
+                    </form>
+                    <div id="create-post-error" class="error-message" style="display: none;"></div>
+                </div>
             </div>
         </div>
 
         <!-- Login Form -->
         <div id="login-form" class="form-container">
             <div id="container">
-                <h2>Log in</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">Log in</h2>
+                    <button onclick="closeL()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-color);">x</button>
+                </div>
                 <form id="loginForm">
                     <input type="text" name="identifier" placeholder="Username or Email" class="input-field" required>
                     <div class="password-wrapper">
@@ -96,7 +105,10 @@
         <!-- Signup Form -->
         <div id="signup-form" class="form-container">
             <div id="container">
-                <h2>Sign Up</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">Sign Up</h2>
+                    <button onclick="closeS()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-color);">x</button>
+                </div>
                 <form id="signupForm">
                     <input type="text" name="nickname" placeholder="Username" class="input-field" required>
                     <input type="text" name="firstName" placeholder="First Name" class="input-field" required>
@@ -106,8 +118,6 @@
                         <option value="">Select Gender</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
-                        <option value="non-binary">Non-binary</option>
-                        <option value="prefer-not-to-say">Prefer not to say</option>
                     </select>
                     <input type="email" name="email" placeholder="Email" class="input-field" required>
                     <div class="password-wrapper">
@@ -127,8 +137,10 @@
             </div>
         </div>
     </div>
+<script src="../js/createpostmodal.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../js/posts.js"></script>
+<script src="../js/comments.js"></script>
 </body>
 <script src="../js/theme.js"></script>
 </html>
