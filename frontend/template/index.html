@@ -136,8 +136,42 @@
                 </p>
             </div>
         </div>
-    </div>
+         <!-- Private Messages Section -->
+            <div class="messages-section">
+                <div class="messages-header">
+                    <h2>Private Messages</h2>
+                    <div class="online-status">
+                        <span class="status-indicator online"></span>
+                        <span id="online-count">0</span> online
+                    </div>
+                </div>
+                
+                <div class="messages-container">
+                    <!-- Users List -->
+                    <div class="users-list-container">
+                        <input type="text" id="user-search" placeholder="Search users...">
+                        <div id="users-list" class="users-list"></div>
+                    </div>
+                    
+                    <!-- Chat Area -->
+                    <div class="chat-area">
+                        <div id="chat-header" class="chat-header">
+                            <h3 id="chat-with-user">Select a user to chat</h3>
+                        </div>
+                        <div id="messages-display" class="messages-display"></div>
+                        <div id="message-input-container" class="message-input-container">
+                            <textarea id="message-input" placeholder="Type your message here..."></textarea>
+                            <button id="send-message-btn">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+         
 <script src="../js/createpostmodal.js"></script>
+<script src="../js/messaging.js"></script>
 <script src="../js/auth.js"></script>
 <script src="../js/posts.js"></script>
 <script src="../js/comments.js"></script>
