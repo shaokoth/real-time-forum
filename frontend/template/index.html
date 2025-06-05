@@ -137,37 +137,21 @@
             </div>
         </div>
          <!-- Private Messages Section -->
-            <div class="messages-section">
-                <div class="messages-header">
-                    <h2>Private Messages</h2>
-                    <div class="online-status">
-                        <span class="status-indicator online"></span>
-                        <span id="online-count">0</span> online
-                    </div>
-                </div>
-                
-                <div class="messages-container">
-                    <!-- Users List -->
-                    <div class="users-list-container">
-                        <input type="text" id="user-search" placeholder="Search users...">
-                        <div id="users-list" class="users-list"></div>
-                    </div>
-                    
-                    <!-- Chat Area -->
-                    <div class="chat-area">
-                        <div id="chat-header" class="chat-header">
-                            <h3 id="chat-with-user">Select a user to chat</h3>
-                        </div>
-                        <div id="messages-display" class="messages-display"></div>
-                        <div id="message-input-container" class="message-input-container">
-                            <textarea id="message-input" placeholder="Type your message here..."></textarea>
-                            <button id="send-message-btn">Send</button>
-                        </div>
-                    </div>
+          <div class="container">
+            <h2>Messages</h2>
+            <div id="userList" class="user-list"></div>
+            
+            <div id="chatWindow" class="chat-window hidden">
+                <div id="chatHeader" class="chat-header"></div>
+                <div id="messages" class="messages"></div>
+                <div class="input-container">
+                    <input id="messageInput" type="text" placeholder="Type a message..." />
+                    <button id="sendButton">Send</button>
                 </div>
             </div>
         </div>
-        </div>
+    </div>
+</div>
 
          
 <script src="../js/createpostmodal.js"></script>
