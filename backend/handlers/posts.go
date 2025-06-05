@@ -120,7 +120,7 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error getting post ID", http.StatusInternalServerError)
 			return
 		}
-
+		
 		// Insert post categories
 		for _, name := range Categories {
 			_, err := tx.Exec(
