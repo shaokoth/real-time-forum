@@ -87,7 +87,7 @@ async function submitComment(postId) {
         return;
     }
     
-    //const content = commentInput.value.trim();
+    const content = commentInput.value.trim();
     
     if (!content) {
         alert('Please enter a comment');
