@@ -55,6 +55,12 @@ async function addComment(postId, content) {
         const newComment = await response.json();
         const comments = await fetchComments(postId);
         displayComments(postId, comments);
+        
+        // Refresh the posts list to update comment count
+        if (typeof fetchPosts === 'function') {
+            fetchPosts();
+        }
+        
         return newComment;
     } catch (error) {
         console.error('Error adding comment:', error);
