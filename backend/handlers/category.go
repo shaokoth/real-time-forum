@@ -20,10 +20,6 @@ var DefaultCategories = []Category{
 	{ID: 4, Name: "Finance"},
 	{ID: 5, Name: "Music"},
 	{ID: 6, Name: "Culture"},
-	{ID: 7, Name: "Technology"},
-	{ID: 8, Name: "Health"},
-	{ID: 9, Name: "Travel"},
-	{ID: 10, Name: "Food"},
 }
 
 // GetAllCategories returns all categories from the database or defaults if none exist
