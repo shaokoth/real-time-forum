@@ -18,10 +18,13 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		var posts []models.Post
 		rows, err := database.Db.Query(`
 			SELECT p.post_id, p.title, p.content, p.user_uuid, p.created_at,
+				   u.nickname,
 				   GROUP_CONCAT(pc.name) as categories,
 				   COALESCE(SUM(CASE WHEN pl.is_like = 1 THEN 1 ELSE 0 END), 0) as likes,
-				   COALESCE(SUM(CASE WHEN pl.is_like = 0 THEN 1 ELSE 0 END), 0) as dislikes
+				   COALESCE(SUM(CASE WHEN pl.is_like = 0 THEN 1 ELSE 0 END), 0) as dislikes,
+				   (SELECT COUNT(*) FROM comments WHERE post_id = p.post_id) as comments_count
 			FROM posts p
+			LEFT JOIN users u ON p.user_uuid = u.uuid
 			LEFT JOIN post_categories pc ON p.post_id = pc.post_id
 			LEFT JOIN post_likes pl ON p.post_id = pl.post_id
 			GROUP BY p.post_id
@@ -37,7 +40,8 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		for rows.Next() {
 			var post models.Post
 			var categoriesStr string
-			err = rows.Scan(&post.Post_id, &post.Title, &post.Content, &post.User_uuid, &post.CreatedAt, &categoriesStr, &post.Likes, &post.Dislikes)
+			err = rows.Scan(&post.Post_id, &post.Title, &post.Content, &post.User_uuid, &post.CreatedAt, &post.Nickname,
+				&categoriesStr, &post.Likes, &post.Dislikes, &post.CommentsCount)
 			if err != nil {
 				http.Error(w, "Error parsing posts", http.StatusInternalServerError)
 				return
@@ -120,7 +124,7 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error getting post ID", http.StatusInternalServerError)
 			return
 		}
-		
+
 		// Insert post categories
 		for _, name := range Categories {
 			_, err := tx.Exec(
