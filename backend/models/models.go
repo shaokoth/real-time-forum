@@ -62,12 +62,14 @@ type Post struct {
 
 type Comment struct {
 	Comment_id int       `json:"comment_id"`
+	User_uuid  string    `json:"user_uuid"`
 	Post_id    int       `json:"post_id"`
 	CreatedAt  time.Time `json:"created_at"`
 	Likes      int       `json:"likes"`
 	Dislikes   int       `json:"dislikes"`
 	Content    string    `json:"content"`
 	UserLiked  int       `json:"UserLiked"`
+	Author     string    `json:"author"`
 }
 
 // =====  hashes the user's password before storing it ====
