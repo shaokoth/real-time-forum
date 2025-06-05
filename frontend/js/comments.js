@@ -1,7 +1,7 @@
 // Function to fetch comments for a specific post
 async function fetchComments(postId) {
     try {
-        const response = await fetch(`/posts/${postId}/comments`);
+        const response = await fetch(`/comments?post_id=${postId}`);
         if (!response.ok) {
             throw new Error('Failed to fetch comments');
         }
@@ -19,11 +19,6 @@ function displayComments(postId, comments) {
     if (!commentsContainer) return;
 
     commentsContainer.innerHTML = '';
-    
-    if (comments.length === 0) {
-        commentsContainer.innerHTML = '<p class="no-comments">No comments yet. Be the first to comment!</p>';
-        return;
-    }
 
     comments.forEach(comment => {
         const commentElement = document.createElement('div');
@@ -42,15 +37,17 @@ function displayComments(postId, comments) {
 // Function to add a new comment
 async function addComment(postId, content) {
     try {
-        const response = await fetch(`/posts/${postId}/comments`, {
+        const response = await fetch(`/comments`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ content }),
+            body: JSON.stringify({ 
+                post_id: postId,
+                content: content 
+            }),
             credentials: 'include'
         });
-
         if (!response.ok) {
             throw new Error('Failed to add comment');
         }
@@ -76,16 +73,21 @@ function createCommentForm(postId) {
     const form = document.createElement('div');
     form.className = 'comment-form';
     form.innerHTML = `
-        <textarea placeholder="Write a comment..." class="comment-input"></textarea>
-        <button onclick="submitComment(${postId})" class="comment-submit">Post Comment</button>
+        <textarea id="comment-input-${postId}" placeholder="Write a comment..." class="comment-input"></textarea>
+        <button type="button" onclick="submitComment(${postId})" class="post-btn">Post Comment</button>
     `;
     return form;
 }
 
 // Function to submit a comment
 async function submitComment(postId) {
-    const commentInput = document.querySelector(`#comments-${postId} .comment-input`);
-    const content = commentInput.value.trim();
+    const commentInput = document.getElementById(`comment-input-${postId}`);
+    if (!commentInput) {
+        console.error('Comment input not found');
+        return;
+    }
+    
+    //const content = commentInput.value.trim();
     
     if (!content) {
         alert('Please enter a comment');
@@ -96,6 +98,7 @@ async function submitComment(postId) {
         await addComment(postId, content);
         commentInput.value = '';
     } catch (error) {
+        console.error('Error submitting comment:', error);
         alert('Failed to post comment. Please try again.');
     }
 }
