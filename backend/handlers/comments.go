@@ -3,6 +3,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"real-time-forum/backend/database"
@@ -13,19 +14,6 @@ import (
 func HandleComments(w http.ResponseWriter, r *http.Request) {
 	var comments []models.Comment
 	var comment models.Comment
-	// Check if user is logged in
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		http.Error(w, "Not logged in", http.StatusUnauthorized)
-		return
-	}
-
-	user, err := utils.GetUserFromSession(cookie.Value)
-	if err != nil {
-		http.Error(w, "Invalid session", http.StatusUnauthorized)
-		return
-	}
-
 	switch r.Method {
 	case "GET":
 		// Get comments for a post
@@ -36,9 +24,9 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 		}
 
 		rows, err := database.Db.Query(`
-			SELECT c.comment_id, c.user_uuid, c.post_id, c.content, c.created_at
+			SELECT c.comment_id, c.user_uuid, c.post_id, c.content, c.created_at, u.nickname as author
 			FROM comments c
-			JOIN users u ON c.comment_id = u.id
+			JOIN users u ON c.user_uuid = u.uuid
 			WHERE c.post_id = ?
 			ORDER BY c.created_at ASC
 		`, postID)
@@ -50,8 +38,10 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 
 		// Parse the comments
 		for rows.Next() {
-			err := rows.Scan(&comment.Comment_id, &comment.Post_id, &comment.CreatedAt, &comment.Content)
+			var comment models.Comment
+			err := rows.Scan(&comment.Comment_id, &comment.User_uuid, &comment.Post_id, &comment.Content, &comment.CreatedAt, &comment.Author)
 			if err != nil {
+				log.Println("error parsing comments", err)
 				http.Error(w, "Error parsing comments", http.StatusInternalServerError)
 				return
 			}
@@ -62,8 +52,21 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(comments)
 
 	case "POST":
-		err := json.NewDecoder(r.Body).Decode(&comment)
+		// Check if user is logged in
+		cookie, err := r.Cookie("session_token")
 		if err != nil {
+			http.Error(w, "Not logged in", http.StatusUnauthorized)
+			return
+		}
+
+		user, err := utils.GetUserFromSession(cookie.Value)
+		if err != nil {
+			http.Error(w, "Invalid session", http.StatusUnauthorized)
+			return
+		}
+		err = json.NewDecoder(r.Body).Decode(&comment)
+		if err != nil {
+			log.Println("invalid request body", err)
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
@@ -80,6 +83,7 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 			user.UUID, comment.Post_id, comment.Content,
 		)
 		if err != nil {
+			log.Println("error creating comment", err)
 			http.Error(w, "Error creating comment", http.StatusInternalServerError)
 			return
 		}
@@ -87,10 +91,10 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 		// Get the comment ID
 		commentID, err := result.LastInsertId()
 		if err != nil {
+			log.Println("error getting commentid", err)
 			http.Error(w, "Error getting comment ID", http.StatusInternalServerError)
 			return
 		}
-
 		// Return success with the new comment ID
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -103,7 +107,7 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//  This function will handle liking a comment
+// This function will handle liking a comment
 func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	type Request struct {
 		CommentID int `json:"comment_id"`

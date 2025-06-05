@@ -62,10 +62,10 @@ function displayPosts(posts) {
             </div>
             <div id="comments-section-${post.post_id}" class="comments-section" style="display: none;">
                 <div id="comments-${post.post_id}" class="comments-container"></div>
-                <form id="comment-form-${post.post_id}" class="comment-form">
-                    <textarea id="comment-input-${post.post_id}" placeholder="Write a comment..." required></textarea>
-                    <button type="submit">Post Comment</button>
-                </form>
+                <div class="comment-form">
+                    <textarea id="comment-input-${post.post_id}" placeholder="Write a comment..." class="comment-input"></textarea>
+                    <button type="button" onclick="submitComment(${post.post_id})" class="post-btn">Post Comment</button>
+                </div>
             </div>
         `;
         postsList.appendChild(postElement);

@@ -416,7 +416,7 @@ body {
 
 .post-actions {
     display: flex;
-    gap: 15px;
+    /* gap: 15px; */
     margin-top: 10px;
     padding-top: 10px;
     border-top: 1px solid #e0e0e0;
@@ -443,6 +443,7 @@ body {
 }
 
 .comment-btn {
+    margin-left:auto;
     background: none;
     border: none;
     cursor: pointer;
@@ -566,12 +567,6 @@ html, body {
 }
 
 /* Comments Styles */
-.comments-section {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: var(--bg-secondary, #f8f9fa);
-    border-radius: 8px;
-}
 
 .comment {
     margin-bottom: 15px;
@@ -607,8 +602,7 @@ html, body {
     margin-top: 20px;
 }
 
-.comment-input {
-    width: 100%;
+#comment-input {
     min-height: 80px;
     padding: 10px;
     margin-bottom: 10px;
@@ -617,25 +611,40 @@ html, body {
     background-color: var(--bg-primary, #ffffff);
     color: var(--text-primary, #1A1A1B);
     resize: vertical;
+    width:95%;
 }
 
-.comment-submit {
+.comments-section {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+    display: none; /* initially hidden */
+}
+
+.comments-container {
+    margin-bottom: 10px;
+}
+
+.comment-form textarea {
+    width: 98%;
+    height: 80px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    resize: vertical;
+}
+
+.post-btn {
+    margin-top: 8px;
     padding: 8px 16px;
-    background-color: var(--accent-color, #0079D3);
+    background-color: hsla(256, 81%, 42%, 0.808);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.2s;
 }
 
-.comment-submit:hover {
-    background-color: var(--accent-hover, #0061a9);
-}
-
-.no-comments {
-    text-align: center;
-    color: var(--text-secondary, #7c7c7c);
-    font-style: italic;
-    padding: 20px 0;
+.post-btn:hover {
+    background-color: #0056b3;
 }
