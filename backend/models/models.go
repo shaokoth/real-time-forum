@@ -17,11 +17,11 @@ type Message struct {
 }
 
 type Reaction struct {
-	ID       int  `json:"id"`
-	UserID   int  `json:"user_id"`
-	PostID   int  `json:"post_id,omitempty"`
-	CommentID int `json:"comment_id,omitempty"`
-	IsLike   bool `json:"is_like"`
+	ID        int  `json:"id"`
+	UserID    int  `json:"user_id"`
+	PostID    int  `json:"post_id,omitempty"`
+	CommentID int  `json:"comment_id,omitempty"`
+	IsLike    bool `json:"is_like"`
 }
 
 type User struct {
@@ -44,20 +44,20 @@ type Category struct {
 }
 
 type Post struct {
-	CreatedAt     time.Time `json:"created_at"`
-	Categories    []string  `json:"categories"`
-	Category  string    `json:"Category"`
-	Likes         int       `json:"likes"`
+	UserLiked     int       `json:"UserLiked"`
+	Post_id       int       `json:"post_id"`
 	Title         string    `json:"title"`
-	Dislikes      int       `json:"dislikes"`
-	UserLiked     int       `json:"UserLiked"` // -1: dislike, 0: none, 1:like
-	CommentsCount int       `json:"comments_count"`
-	Comments      []Comment `json:"comments"`
+	Category      string    `json:"Category"`
 	Content       string    `json:"content"`
 	User_uuid     string    `json:"user_uuid"`
-	Post_id       int       `json:"post_id"`
+	CreatedAt     time.Time `json:"created_at"`
+	Nickname      string    `json:"nickname"`
+	Categories    []string  `json:"categories"`
+	Likes         int       `json:"likes"`
 	Filepath      string    `json:"filepath"`
+	Dislikes      int       `json:"dislikes"`
 	Filename      string    `json:"filename"`
+	CommentsCount int       `json:"comments_count"`
 }
 
 type Comment struct {
