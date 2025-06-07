@@ -137,19 +137,21 @@
             </div>
         </div>
          <!-- Private Messages Section -->
-          <div class="container">
+        {{if .IsLoggedIn}}
+          <div class="chats">
             <h2>Messages</h2>
             <div id="userList" class="user-list"></div>
-            
+            <!-- users will be populated here -->
             <div id="chatWindow" class="chat-window hidden">
                 <div id="chatHeader" class="chat-header"></div>
                 <div id="messages" class="messages"></div>
-                <div class="input-container">
-                    <input id="messageInput" type="text" placeholder="Type a message..." />
+                <div class="message-input-container">
+                    <input type="text" id="messageInput" placeholder="Type a message..." />
                     <button id="sendButton">Send</button>
                 </div>
             </div>
         </div>
+        {{end}}
     </div>
 </div>
 
