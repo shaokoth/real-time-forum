@@ -35,12 +35,9 @@ var upgrader = websocket.Upgrader{
 
 // InitWebSocket initializes the WebSocket system
 func InitWebSocket() {
-	Clients = make(map[string]*Client)
-	broadcast = make(chan models.Message)
 	go handleBroadcast()
 }
 
-// HandleWebSocket handles WebSocket connections
 func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
@@ -58,24 +55,24 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		log.Println("Error upgrading connections", err)
 		return
 	}
-	client := &Client{UserID: user.UUID, Conn: conn, Send: make(chan []byte)}
-
-	mu.Lock()
-	Clients[client.UserID] = client
-	mu.Unlock()
-
-	// Notify all other clients that a new user is online
-	broadcast <- models.Message{
-		Type: "user_status",
-		Content: map[string]interface{}{
-			"userId":   user.UUID,
-			"nickname": user.Nickname,
-			"status":   "online",
-		},
-		CreatedAt: time.Now(),
+	client := &Client{
+		UserID: user.UUID,
+		Conn:   conn,
+		Send:   make(chan []byte),
 	}
 
-	// Start goroutines for reading and writing
+	// Update user status to online
+	_, err = database.Db.Exec("UPDATE users SET is_online = TRUE, last_seen = CURRENT_TIMESTAMP WHERE id = ?", client.UserID)
+	if err != nil {
+		log.Println(err)
+	}
+
+	mu.Lock()
+	Clients[user.UUID] = client
+	mu.Unlock()
+
+	
+
 	go readMessages(client)
 	go writeMessages(client)
 }
@@ -84,37 +81,36 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 func readMessages(c *Client) {
 	defer func() {
 		mu.Lock()
+
+		// Update user status to offline
+		_, err := database.Db.Exec("UPDATE users SET is_online = FALSE, last_seen = CURRENT_TIMESTAMP WHERE id = ?", c.UserID)
+		if err != nil {
+			log.Println(err)
+		}
 		delete(Clients, c.UserID)
 		mu.Unlock()
 		c.Conn.Close()
-
-		// Notify others this user is offline
-		broadcast <- models.Message{
-			Type: "user_status",
-			Content: map[string]interface{}{
-				"userId": c.UserID,
-				"status": "offline",
-			},
-			CreatedAt: time.Now(),
-		}
 	}()
 	for {
-		// Read message from the client
-		_, message, err := c.Conn.ReadMessage() // ignore client messages
+		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
-			break // Discoonnect client
+			break // Disconnect client
 		}
-		// Unmarshal message
 		var msg models.Message
 		if err = json.Unmarshal(message, &msg); err != nil {
 			log.Printf("Error parsing message: %v", err)
 			continue
 		}
-		// Set the sender ID
+
+		// Validate message
+		if msg.ReceiverID == "" || msg.Content == "" {
+			log.Println("Invalid message format")
+			continue
+		}
+
 		msg.SenderID = c.UserID
 		msg.CreatedAt = time.Now()
 
-		// Store the message in the database
 		_, err = database.Db.Exec(
 			"INSERT INTO private_messages (content, sender_id, receiver_id, created_at) VALUES (?, ?, ?, ?)",
 			msg.Content, msg.SenderID, msg.ReceiverID, msg.CreatedAt,
@@ -128,7 +124,6 @@ func readMessages(c *Client) {
 	}
 }
 
-// Writes messages to the client
 func writeMessages(c *Client) {
 	defer func() {
 		c.Conn.Close()
