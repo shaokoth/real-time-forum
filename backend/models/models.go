@@ -8,20 +8,19 @@ import (
 )
 
 type Message struct {
-	Type       string      `json:"type"`
-	ID         string      `json:"id"`
-	Content    interface{} `json:"content"`
-	SenderID   string      `json:"sender_id"`
-	ReceiverID string      `json:"receiver_id"`
-	CreatedAt  time.Time   `json:"created_at"`
+	ID         string    `json:"id"`
+	Content    string    `json:"content"`
+	SenderID   string    `json:"sender_id"`
+	ReceiverID string    `json:"receiver_id"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type Reaction struct {
-	ID       int  `json:"id"`
-	UserID   int  `json:"user_id"`
-	PostID   int  `json:"post_id,omitempty"`
-	CommentID int `json:"comment_id,omitempty"`
-	IsLike   bool `json:"is_like"`
+	ID        int  `json:"id"`
+	UserID    int  `json:"user_id"`
+	PostID    int  `json:"post_id,omitempty"`
+	CommentID int  `json:"comment_id,omitempty"`
+	IsLike    bool `json:"is_like"`
 }
 
 type User struct {
@@ -46,7 +45,7 @@ type Category struct {
 type Post struct {
 	CreatedAt     time.Time `json:"created_at"`
 	Categories    []string  `json:"categories"`
-	Category  string    `json:"Category"`
+	Category      string    `json:"Category"`
 	Likes         int       `json:"likes"`
 	Title         string    `json:"title"`
 	Dislikes      int       `json:"dislikes"`
