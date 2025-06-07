@@ -29,6 +29,7 @@ func Routers() (*http.ServeMux, error) {
 	
 	// These endpoints require authentication
 	mux.HandleFunc("/ws", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleWebSocket)))
+	mux.HandleFunc("/messages", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMessages)))
 	mux.HandleFunc("/users", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleUsers)))
 	mux.HandleFunc("/posts/like", handlers.AuthMiddleware(http.HandlerFunc(handlers.LikePostHandler)))
 	mux.HandleFunc("/posts/dislike", handlers.AuthMiddleware(http.HandlerFunc(handlers.DislikePostHandler)))
