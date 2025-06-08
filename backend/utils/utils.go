@@ -142,9 +142,9 @@ func GetCommentLikesDislikes(commentId int) (int, int, error) {
 func GetCommentReaction(userId, commentId int) (models.Reaction, error) {
 	var reaction models.Reaction
 	err := database.Db.QueryRow(
-		"SELECT id, user_id, comment_id, is_like FROM comment_likes WHERE user_id = ? AND comment_id = ?",
+		"SELECT user_id, comment_id, is_like FROM comment_likes WHERE user_id = ? AND comment_id = ?",
 		userId, commentId,
-	).Scan(&reaction.ID, &reaction.UserID, &reaction.CommentID, &reaction.IsLike)
+	).Scan(&reaction.UserID, &reaction.CommentID, &reaction.IsLike)
 	return reaction, err
 }
 
