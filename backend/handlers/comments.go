@@ -3,7 +3,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"real-time-forum/backend/database"
@@ -23,13 +22,37 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Get user ID if logged in
+		var userID int
+		cookie, err := r.Cookie("session_token")
+		if err == nil {
+			user, err := utils.GetUserFromSession(cookie.Value)
+			if err == nil {
+				userID = user.ID
+			}
+		}
+
 		rows, err := database.Db.Query(`
-			SELECT c.comment_id, c.user_uuid, c.post_id, c.content, c.created_at, u.nickname as author
+			SELECT 
+				c.comment_id, c.user_uuid, c.post_id, c.content, c.created_at, u.nickname as author,
+				COALESCE(SUM(CASE WHEN cl.is_like = 1 THEN 1 ELSE 0 END), 0) as likes,
+				COALESCE(SUM(CASE WHEN cl.is_like = 0 THEN 1 ELSE 0 END), 0) as dislikes,
+				CASE 
+					WHEN EXISTS (
+						SELECT 1 FROM comment_likes WHERE comment_id = c.comment_id AND user_id = ? AND is_like = 1
+					) THEN 1
+					WHEN EXISTS (
+						SELECT 1 FROM comment_likes 
+						WHERE comment_id = c.comment_id AND user_id = ? AND is_like = 0
+					) THEN -1
+					ELSE 0
+				END as user_liked
 			FROM comments c
 			JOIN users u ON c.user_uuid = u.uuid
+			LEFT JOIN comment_likes cl ON c.comment_id = cl.comment_id
 			WHERE c.post_id = ?
-			ORDER BY c.created_at ASC
-		`, postID)
+			GROUP BY c.comment_id  ORDER BY c.created_at ASC
+		`, userID, userID, postID)
 		if err != nil {
 			http.Error(w, "Error fetching comments", http.StatusInternalServerError)
 			return
@@ -39,9 +62,11 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 		// Parse the comments
 		for rows.Next() {
 			var comment models.Comment
-			err := rows.Scan(&comment.Comment_id, &comment.User_uuid, &comment.Post_id, &comment.Content, &comment.CreatedAt, &comment.Author)
+			err := rows.Scan(
+				&comment.Comment_id, &comment.User_uuid, &comment.Post_id, &comment.Content, &comment.CreatedAt,
+				&comment.Author, &comment.Likes, &comment.Dislikes, &comment.UserLiked,
+			)
 			if err != nil {
-				log.Println("error parsing comments", err)
 				http.Error(w, "Error parsing comments", http.StatusInternalServerError)
 				return
 			}
@@ -66,7 +91,6 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 		}
 		err = json.NewDecoder(r.Body).Decode(&comment)
 		if err != nil {
-			log.Println("invalid request body", err)
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
@@ -83,7 +107,6 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 			user.UUID, comment.Post_id, comment.Content,
 		)
 		if err != nil {
-			log.Println("error creating comment", err)
 			http.Error(w, "Error creating comment", http.StatusInternalServerError)
 			return
 		}
@@ -91,7 +114,6 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 		// Get the comment ID
 		commentID, err := result.LastInsertId()
 		if err != nil {
-			log.Println("error getting commentid", err)
 			http.Error(w, "Error getting comment ID", http.StatusInternalServerError)
 			return
 		}
@@ -113,7 +135,7 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		CommentID int `json:"comment_id"`
 	}
 
-	cookie, err := r.Cookie("session_id")
+	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		http.Error(w, "Not logged in", http.StatusUnauthorized)
 		return
@@ -171,7 +193,7 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		CommentID int `json:"comment_id"`
 	}
 
-	cookie, err := r.Cookie("session_id")
+	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		http.Error(w, "Not logged in", http.StatusUnauthorized)
 		return
