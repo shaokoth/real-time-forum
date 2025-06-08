@@ -17,7 +17,7 @@ type Message struct {
 }
 
 type Reaction struct {
-	ID        int  `json:"id"`
+	ID        int  `json:"id,omitempty"`
 	UserID    int  `json:"user_id"`
 	PostID    int  `json:"post_id,omitempty"`
 	CommentID int  `json:"comment_id,omitempty"`
