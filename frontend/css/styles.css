@@ -574,6 +574,8 @@ html, body {
     background-color: var(--bg-primary, #ffffff);
     border-radius: 6px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .comment-header {
@@ -596,6 +598,10 @@ html, body {
 .comment-content {
     color: var(--text-primary, #1A1A1B);
     line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    white-space: pre-wrap;
 }
 
 .comment-form {
@@ -647,4 +653,43 @@ html, body {
 
 .post-btn:hover {
     background-color: #0056b3;
+}
+
+.comment-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+
+.comment-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+    padding: 5px 10px;
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.comment-actions .like-btn {
+    color: #0079D3;
+    margin-left: auto;
+}
+
+.comment-actions .like-count {
+    font-size: 0.9em;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+.comment-actions .like-btn.active {
+    color: #0079D3;
+    font-weight: bold;
+}
+
+.comment-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
