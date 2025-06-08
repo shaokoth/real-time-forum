@@ -23,12 +23,19 @@ function displayComments(postId, comments) {
     comments.forEach(comment => {
         const commentElement = document.createElement('div');
         commentElement.className = 'comment';
+        commentElement.setAttribute('data-comment-id', comment.comment_id);
         commentElement.innerHTML = `
             <div class="comment-header">
                 <span class="comment-author">${comment.author}</span>
                 <span class="comment-date">${new Date(comment.created_at).toLocaleDateString()}</span>
             </div>
             <div class="comment-content">${comment.content}</div>
+            <div class="comment-actions">
+                <button class="like-btn ${comment.UserLiked === 1 ? 'active' : ''}" onclick="handleCommentLike(${comment.comment_id})">
+                    <span class="emoji">👍</span>
+                    <span class="like-count">${comment.likes}</span>
+                </button>
+            </div>
         `;
         commentsContainer.appendChild(commentElement);
     });
@@ -109,10 +116,76 @@ async function submitComment(postId) {
     }
 }
 
+// Function to handle comment like
+async function handleCommentLike(commentId) {
+    try {
+        const response = await fetch('/comments/like', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ comment_id: commentId }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to like comment');
+        }
+
+        // Get the post ID from the comment's parent container
+        const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+        if (!commentElement) {
+            console.error('Comment element not found');
+            return;
+        }
+        const postId = commentElement.closest('.post-card').dataset.postId;
+        
+        // Refresh comments to update counts
+        const comments = await fetchComments(postId);
+        displayComments(postId, comments);
+    } catch (error) {
+        console.error('Error liking comment:', error);
+    }
+}
+
+// Function to handle comment dislike
+async function handleCommentDislike(commentId) {
+    try {
+        const response = await fetch('/comments/dislike', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ comment_id: commentId }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to dislike comment');
+        }
+
+        // Get the post ID from the comment's parent container
+        const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+        if (!commentElement) {
+            console.error('Comment element not found');
+            return;
+        }
+        const postId = commentElement.closest('.post-card').dataset.postId;
+        
+        // Refresh comments to update counts
+        const comments = await fetchComments(postId);
+        displayComments(postId, comments);
+    } catch (error) {
+        console.error('Error disliking comment:', error);
+    }
+}
+
 // Export functions for use in other files
 window.fetchComments = fetchComments;
 window.displayComments = displayComments;
 window.addComment = addComment;
 window.initializeComments = initializeComments;
 window.createCommentForm = createCommentForm;
-window.submitComment = submitComment; 
+window.submitComment = submitComment;
+window.handleCommentLike = handleCommentLike; 
+window.handleCommentDislike = handleCommentDislike; 
