@@ -62,6 +62,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("User registered successfully"))
+	return
+	// w.WriteHeader(http.StatusCreated)
+	// w.Write([]byte("User registered successfully"))
 }
