@@ -2,37 +2,32 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
-	"sync"
 
 	"real-time-forum/backend/database"
 	"real-time-forum/backend/models"
 	"real-time-forum/backend/utils"
 )
 
-var (
-	mu          sync.Mutex
-	users       []models.User
-	// activeUsers map[string]*models.User
-)
-
 func HandleUsers(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
 	}
-	cookie, err := r.Cookie("session_id")
+	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		http.Error(w, "Not logged in", http.StatusUnauthorized)
 		return
 	}
-	_, err = utils.GetUserFromSession(cookie.Value)
+	user, err := utils.GetUserFromSession(cookie.Value)
 	if err != nil {
 		http.Error(w, "Invalid session", http.StatusUnauthorized)
 		return
 	}
 	// Get all users
 	rows, err := database.Db.Query(`
-	SELECT id, nickname, email, firstname, lastname
+	SELECT id, nickname, email, first_name, last_name
 	FROM users
 	ORDER BY nickname ASC
 	`)
@@ -43,14 +38,25 @@ func HandleUsers(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	// Parse the users
+	var users []models.User
+
 	for rows.Next() {
-		err := rows.Scan(&user.ID, &user.Nickname, &user.Email, &user.FirstName, &user.LastName)
+		var u models.User
+		err := rows.Scan(&u.ID, &u.Nickname, &u.Email, &u.FirstName, &u.LastName)
 		if err != nil {
 			http.Error(w, "Error parsing users", http.StatusInternalServerError)
+			return
 		}
-
-	users = append(users, user)
+		if u.ID != user.ID {
+			users = append(users, u)
+		}
 	}
+	
 	w.Header().Set("Content-Type", "application/json")
+	// Debug print all users
+	for _, u := range users {
+		log.Printf("User: ID=%d, Nickname=%s, Email=%s, FirstName=%s, LastName=%s",
+			u.ID, u.Nickname, u.Email, u.FirstName, u.LastName)
+	}
 	json.NewEncoder(w).Encode(users)
 }
