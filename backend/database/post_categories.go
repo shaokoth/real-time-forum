@@ -14,8 +14,10 @@ func CreatePostCategoriesTable(db *sql.DB) error {
 	query := `
     CREATE TABLE IF NOT EXISTS post_categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name TEXT UNIQUE NOT NULL,
-		post_id INTEGER NOT NULL
+        name TEXT NOT NULL,
+        post_id INTEGER NOT NULL,
+        UNIQUE(post_id, name),
+        FOREIGN KEY(post_id) REFERENCES posts(post_id)
     );`
 
 	if _, err := db.Exec(query); err != nil {
