@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	mu          sync.Mutex
-	users       []models.User
+	mu    sync.Mutex
+	users []models.User
 	// activeUsers map[string]*models.User
 )
 
@@ -49,7 +49,7 @@ func HandleUsers(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error parsing users", http.StatusInternalServerError)
 		}
 
-	users = append(users, user)
+		users = append(users, user)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(users)
