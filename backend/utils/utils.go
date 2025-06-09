@@ -30,6 +30,12 @@ func CredentialExists(db *sql.DB, credential string) bool {
 	return count > 0
 }
 
+// CleanupExpiredSessions removes expired sessions from the database
+func CleanupExpiredSessions() error {
+	_, err := database.Db.Exec("DELETE FROM sessions WHERE expires_at < ?", time.Now())
+	return err
+}
+
 /*
 === ValidateSession checks if a session token is valid. The function takes a pointer to the request
 and returns a boolean value and a user_ID of type string based on the session_token found in the
@@ -39,6 +45,11 @@ func ValidateSession(r *http.Request) (bool, string) {
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		return false, ""
+	}
+
+	// Clean up expired sessions first
+	if err := CleanupExpiredSessions(); err != nil {
+		fmt.Printf("Error cleaning up expired sessions: %v", err)
 	}
 
 	var (
@@ -53,6 +64,8 @@ func ValidateSession(r *http.Request) (bool, string) {
 
 	if time.Now().After(expiresAt) {
 		fmt.Printf("session expired for user %s", userID)
+		// Delete the expired session
+		database.Db.Exec("DELETE FROM sessions WHERE session_token = ?", cookie.Value)
 		return false, ""
 	}
 
