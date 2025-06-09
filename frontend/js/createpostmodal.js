@@ -15,4 +15,3 @@ document.getElementById('create-post-form').addEventListener('click', function(e
         closeCreatePostForm();
     }
 });
-
