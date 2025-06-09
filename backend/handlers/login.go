@@ -28,9 +28,9 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
-	
 
-	err := database.Db.QueryRow(`SELECT id, password FROM users WHERE nickname = ? OR email = ?`, creds.Identifier, creds.Identifier).Scan(&user.ID, &user.Password)
+	err := database.Db.QueryRow(`SELECT id, password FROM users WHERE nickname = ? OR email = ?`,
+		creds.Identifier, creds.Identifier).Scan(&user.ID, &user.Password)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Invalid login credentials", http.StatusUnauthorized)
@@ -39,6 +39,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
+
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(creds.Password))
 	if err != nil {
 		http.Error(w, "Invalid login credentials", http.StatusUnauthorized)
@@ -53,7 +54,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	sessionID := u.String()
 
-	expiresAt := time.Now().Add(24 * time.Hour) // Sessions expire after 24 hours
+	expiresAt := time.Now().Add(24 * time.Hour) // Sessions expire after 60 sec
 
 	_, err = database.Db.Exec("INSERT INTO sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)",
 		user.ID, sessionID, expiresAt,
