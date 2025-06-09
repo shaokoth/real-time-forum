@@ -27,7 +27,7 @@ function displayComments(postId, comments) {
         commentElement.innerHTML = `
             <div class="comment-header">
                 <span class="comment-author">${comment.author}</span>
-                <span class="comment-date">${new Date(comment.created_at).toLocaleDateString()}</span>
+                <span class="comment-date">${new Date(comment.created_at).toLocaleString()}</span>
             </div>
             <div class="comment-content">${comment.content}</div>
             <div class="comment-actions">
