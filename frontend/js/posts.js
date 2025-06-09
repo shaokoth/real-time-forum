@@ -20,7 +20,7 @@ function displayCategories(categories) {
     const allCategoriesElement = document.createElement('div');
     allCategoriesElement.className = 'category-card active';
     allCategoriesElement.innerHTML = `
-        <h3>All Categories</h3>
+        <h3>All  Posts</h3>
     `;
     allCategoriesElement.onclick = () => {
         // Remove active class from all category cards
@@ -75,7 +75,7 @@ function displayPosts(posts) {
             <p class="post-content">${post.content}</p>
             <div class="post-meta">
                 <span class="post-author">By ${post.nickname}</span>
-                <span class="post-date">${new Date(post.created_at).toLocaleDateString()}</span>
+                <span class="post-date">${new Date(post.created_at).toLocaleString()}</span>
             </div>
             <div class="post-categories">
                 ${post.categories.map(cat => `<span class="category-tag">${cat}</span>`).join('')}
