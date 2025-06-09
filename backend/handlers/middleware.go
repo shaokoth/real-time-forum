@@ -1,7 +1,10 @@
 package handlers
 
-import ("net/http"
-"real-time-forum/backend/utils")
+import (
+	"net/http"
+
+	"real-time-forum/backend/utils"
+)
 
 // ===== AuthMiddleware is a middleware function that checks if a user is authenticated before allowing them to access certain routes.====
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {

@@ -16,7 +16,7 @@ func Routers() (*http.ServeMux, error) {
 	mux.Handle("/js/", http.StripPrefix("/js/", scriptServer))
 	imageServer := http.FileServer(http.Dir("frontend/image"))
 	mux.Handle("/static/image/", http.StripPrefix("/static/image/", imageServer))
-    
+
 	mux.HandleFunc("/", handlers.HandleHomepage)
 	mux.HandleFunc("/register", handlers.RegisterUser)
 	mux.HandleFunc("/login", handlers.HandleLogin)
@@ -26,7 +26,7 @@ func Routers() (*http.ServeMux, error) {
 	mux.HandleFunc("/posts", handlers.HandlePosts)
 	mux.HandleFunc("/comments", handlers.HandleComments)
 	mux.HandleFunc("/categories", handlers.HandleGetCategories)
-	
+
 	// These endpoints require authentication
 	mux.HandleFunc("/ws", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleWebSocket)))
 	mux.HandleFunc("/users", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleUsers)))

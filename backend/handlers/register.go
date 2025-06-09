@@ -18,7 +18,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	 
+
 	var user models.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
@@ -27,7 +27,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	if !utils.IsValidEmail(user.Email) {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Invalid email address"))
-		//http.Redirect(w, r, "/register", http.StatusSeeOther)
+		// http.Redirect(w, r, "/register", http.StatusSeeOther)
 		return
 	}
 	if utils.CredentialExists(database.Db, user.Nickname) || utils.CredentialExists(database.Db, user.Email) {
@@ -47,7 +47,8 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	UUID := u.String()
 
-	_, err = database.Db.Exec(`INSERT INTO users(uuid, nickname, age, gender, first_name, email, last_name, password)VALUES(?,?,?,?,?,?,?,?)`, UUID, user.Nickname, user.Age, user.Gender, user.FirstName, user.Email, user.LastName, user.Password)
+	_, err = database.Db.Exec(`INSERT INTO users(uuid, nickname, age, gender, first_name, email, last_name, password)VALUES(?,?,?,?,?,?,?,?)`,
+		UUID, user.Nickname, user.Age, user.Gender, user.FirstName, user.Email, user.LastName, user.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
