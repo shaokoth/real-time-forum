@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -16,20 +17,38 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		// Get all posts - no authentication required
 		var posts []models.Post
-		rows, err := database.Db.Query(`
+
+		// Get category filter from query parameter
+		category := r.URL.Query().Get("category")
+
+		// Base query
+		query := `
 			SELECT p.post_id, p.title, p.content, p.user_uuid, p.created_at,
 				   u.nickname,
 				   GROUP_CONCAT(pc.name) as categories,
-				   COALESCE(SUM(CASE WHEN pl.is_like = 1 THEN 1 ELSE 0 END), 0) as likes,
-				   COALESCE(SUM(CASE WHEN pl.is_like = 0 THEN 1 ELSE 0 END), 0) as dislikes,
+				   (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id AND is_like = 1) as likes,
+				   (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id AND is_like = 0) as dislikes,
 				   (SELECT COUNT(*) FROM comments WHERE post_id = p.post_id) as comments_count
 			FROM posts p
 			LEFT JOIN users u ON p.user_uuid = u.uuid
 			LEFT JOIN post_categories pc ON p.post_id = pc.post_id
-			LEFT JOIN post_likes pl ON p.post_id = pl.post_id
-			GROUP BY p.post_id
-			ORDER BY p.created_at DESC
-		`)
+		`
+
+		// Add category filter if specified
+		if category != "" {
+			query += ` WHERE pc.name = ?`
+		}
+
+		query += ` GROUP BY p.post_id ORDER BY p.created_at DESC`
+
+		var rows *sql.Rows
+		var err error
+		if category != "" {
+			rows, err = database.Db.Query(query, category)
+		} else {
+			rows, err = database.Db.Query(query)
+		}
+
 		if err != nil {
 			http.Error(w, "Error fetching posts", http.StatusInternalServerError)
 			return
