@@ -3,6 +3,7 @@ package handlers
 import (
 	"html/template"
 	"net/http"
+
 	"real-time-forum/backend/database"
 	"real-time-forum/backend/utils"
 )
