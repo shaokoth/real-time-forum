@@ -1,3 +1,5 @@
+let currentCategory = null;
+
 // Fetch and display categories
 async function fetchCategories() {
     try {
@@ -14,14 +16,35 @@ function displayCategories(categories) {
     const categoriesList = document.getElementById('categories-list');
     categoriesList.innerHTML = '';
 
+    // Add "All Categories" option
+    const allCategoriesElement = document.createElement('div');
+    allCategoriesElement.className = 'category-card active';
+    allCategoriesElement.innerHTML = `
+        <h3>All Categories</h3>
+    `;
+    allCategoriesElement.onclick = () => {
+        // Remove active class from all category cards
+        document.querySelectorAll('.category-card').forEach(card => card.classList.remove('active'));
+        // Add active class to this card
+        allCategoriesElement.classList.add('active');
+        currentCategory = null;
+        fetchPosts();
+    };
+    categoriesList.appendChild(allCategoriesElement);
+
     categories.forEach(category => {
         const categoryElement = document.createElement('div');
         categoryElement.className = 'category-card';
         categoryElement.innerHTML = `
             <h3>${category.name}</h3>
-            <p>${category.description || ''}</p>
         `;
-        categoryElement.onclick = () => filterPostsByCategory(category.id);
+        categoryElement.onclick = () => {
+            // Remove active class from all category cards
+            document.querySelectorAll('.category-card').forEach(card => card.classList.remove('active'));
+            // Add active class to this card
+            categoryElement.classList.add('active');
+            filterPostsByCategory(category.name);
+        };
         categoriesList.appendChild(categoryElement);
     });
 }
@@ -29,7 +52,8 @@ function displayCategories(categories) {
 // Fetch and display posts
 async function fetchPosts() {
     try {
-        const response = await fetch('/posts');
+        const url = currentCategory ? `/posts?category=${encodeURIComponent(currentCategory)}` : '/posts';
+        const response = await fetch(url);
         const posts = await response.json();
         displayPosts(posts);
     } catch (error) {
@@ -73,11 +97,12 @@ function displayPosts(posts) {
 }
 
 // Filter posts by category
-async function filterPostsByCategory(categoryId) {
+async function filterPostsByCategory(categoryName) {
     try {
-        const response = await fetch(`/posts?category=${categoryId}`);
+        currentCategory = categoryName;
+        const response = await fetch(`/posts?category=${encodeURIComponent(categoryName)}`);
         const posts = await response.json();
-        displayPosts(posts);
+         displayPosts(posts);
     } catch (error) {
         console.error('Error filtering posts:', error);
     }
@@ -151,7 +176,7 @@ async function likePost(postId) {
         });
         
         if (response.ok) {
-            fetchPosts(); // Refresh posts to update like count
+            fetchPosts();
         }
     } catch (error) {
         console.error('Error liking post:', error);
@@ -189,28 +214,6 @@ function toggleComments(postId) {
         commentsSection.style.display = 'none';
     }
 }
-
-// Handle comment submission
-document.addEventListener('submit', async (e) => {
-    if (e.target.id && e.target.id.startsWith('comment-form-')) {
-        e.preventDefault();
-        const postId = e.target.id.split('-')[2];
-        const commentInput = document.getElementById(`comment-input-${postId}`);
-        const content = commentInput.value.trim();
-        
-        if (!content) {
-            alert('Please enter a comment');
-            return;
-        }
-
-        try {
-            await addComment(postId, content);
-            commentInput.value = '';
-        } catch (error) {
-            alert('Failed to post comment. Please try again.');
-        }
-    }
-});
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', () => {
