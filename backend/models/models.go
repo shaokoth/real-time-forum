@@ -13,6 +13,7 @@ type Message struct {
 	SenderID   string    `json:"sender_id"`
 	ReceiverID string    `json:"receiver_id"`
 	CreatedAt  time.Time `json:"created_at"`
+	Type       string    `json:"type"` // message, typing, stop_typing
 }
 
 type Reaction struct {
