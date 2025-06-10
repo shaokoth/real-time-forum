@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"real-time-forum/backend/database"
@@ -17,6 +18,7 @@ var (
 	user      models.User
 	Clients   map[string]*Client
 	broadcast chan models.Message
+	mu        sync.Mutex
 )
 
 type Client struct {
@@ -35,6 +37,8 @@ var upgrader = websocket.Upgrader{
 
 // InitWebSocket initializes the WebSocket system
 func InitWebSocket() {
+	Clients = make(map[string]*Client)
+	broadcast = make(chan models.Message)
 	go handleBroadcast()
 }
 
@@ -62,16 +66,14 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update user status to online
-	_, err = database.Db.Exec("UPDATE users SET is_online = TRUE, last_seen = CURRENT_TIMESTAMP WHERE id = ?", client.UserID)
-	if err != nil {
-		log.Println(err)
-	}
+	// _, err = database.Db.Exec("UPDATE users SET is_online = TRUE, last_seen = CURRENT_TIMESTAMP WHERE id = ?", client.UserID)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 
 	mu.Lock()
-	Clients[user.UUID] = client
+	Clients[client.UserID] = client
 	mu.Unlock()
-
-	
 
 	go readMessages(client)
 	go writeMessages(client)
@@ -83,10 +85,10 @@ func readMessages(c *Client) {
 		mu.Lock()
 
 		// Update user status to offline
-		_, err := database.Db.Exec("UPDATE users SET is_online = FALSE, last_seen = CURRENT_TIMESTAMP WHERE id = ?", c.UserID)
-		if err != nil {
-			log.Println(err)
-		}
+		// _, err := database.Db.Exec("UPDATE users SET is_online = FALSE, last_seen = CURRENT_TIMESTAMP WHERE id = ?", c.UserID)
+		// if err != nil {
+		// 	log.Println(err)
+		// }
 		delete(Clients, c.UserID)
 		mu.Unlock()
 		c.Conn.Close()
@@ -96,31 +98,43 @@ func readMessages(c *Client) {
 		if err != nil {
 			break // Disconnect client
 		}
+
 		var msg models.Message
 		if err = json.Unmarshal(message, &msg); err != nil {
 			log.Printf("Error parsing message: %v", err)
 			continue
 		}
 
-		// Validate message
-		if msg.ReceiverID == "" || msg.Content == "" {
-			log.Println("Invalid message format")
-			continue
-		}
-
 		msg.SenderID = c.UserID
-		msg.CreatedAt = time.Now()
 
-		_, err = database.Db.Exec(
-			"INSERT INTO private_messages (content, sender_id, receiver_id, created_at) VALUES (?, ?, ?, ?)",
-			msg.Content, msg.SenderID, msg.ReceiverID, msg.CreatedAt,
-		)
-		if err != nil {
-			log.Printf("Error storing message: %v", err)
+		switch msg.Type {
+		case "typing", "stop_typing":
+			// Just forward typing indicators
+			broadcast <- msg
 			continue
+
+		case "message":
+			// Validate message
+			if msg.ReceiverID == "" || msg.Content == "" {
+				log.Println("Invalid message")
+				continue
+			}
+			msg.CreatedAt = time.Now()
+
+			_, err = database.Db.Exec(
+				"INSERT INTO private_messages (content, sender_id, receiver_id, created_at) VALUES (?, ?, ?, ?)",
+				msg.Content, msg.SenderID, msg.ReceiverID, msg.CreatedAt,
+			)
+			if err != nil {
+				log.Printf("Failed to save message: %v", err)
+				continue
+			}
+			// Forward the message to the receiver
+			broadcast <- msg
+
+		default:
+			log.Printf("Unknown message type: %s", msg.Type)
 		}
-		// Forward the message to the receiver
-		broadcast <- msg
 	}
 }
 
@@ -163,3 +177,14 @@ func handleBroadcast() {
 		mu.Unlock()
 	}
 }
+
+// func getOnlineUserIDs() []string {
+// 	mu.Lock()
+// 	defer mu.Unlock()
+
+// 	var onUsers []string
+// 	for id := range Clients {
+// 		onUsers = append(onUsers, id)
+// 	}
+// 	return onUsers
+// }
