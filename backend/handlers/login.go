@@ -28,9 +28,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
-	
 
-	err := database.Db.QueryRow(`SELECT id, password FROM users WHERE nickname = ? OR email = ?`, creds.Identifier, creds.Identifier).Scan(&user.ID, &user.Password)
+	err := database.Db.QueryRow(`SELECT id,uuid, password FROM users WHERE nickname = ? OR email = ?`, creds.Identifier, creds.Identifier).Scan(&user.ID, &user.UUID, &user.Password)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Invalid login credentials", http.StatusUnauthorized)
@@ -74,5 +73,5 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	})
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Login successful"))
+	w.Write([]byte(user.UUID))
 }
