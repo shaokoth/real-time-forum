@@ -23,7 +23,6 @@ func HandleGetMessages(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		offset = 0
 	}
-
 	// Get current user from session
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
@@ -42,9 +41,10 @@ func HandleGetMessages(w http.ResponseWriter, r *http.Request) {
 		SELECT sender_id, receiver_id, content, created_at
 		FROM private_messages
 		WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
-		ORDER BY created_at DESC
-		LIMIT 10 OFFSET ?`,
+		ORDER BY created_at ASC
+		LIMIT 10`,
 		otherUserID, user.UUID, user.UUID, otherUserID, offset)
+		
 	if err != nil {
 		log.Printf("Message query error: %v", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -62,6 +62,10 @@ func HandleGetMessages(w http.ResponseWriter, r *http.Request) {
 		messages = append(messages, msg)
 	}
 
+	if messages == nil {
+		messages = []models.Message{}
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(messages)
 }
