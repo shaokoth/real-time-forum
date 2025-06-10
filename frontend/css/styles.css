@@ -311,10 +311,40 @@ body {
 
     .input-field {
         font-size: 16px;
-   }
-   .main-layout {
-    flex-direction: column;
-}
+    }
+
+    .main-layout {
+        flex-direction: column;
+        height: auto;
+        overflow: visible;
+    }
+
+    .categories-section {
+        width: 100%;
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 10px;
+        margin-bottom: 15px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .categories-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .category-card {
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    .posts-section {
+        max-width: 100%;
+        overflow-y: visible;
+    }
 }
 
 /* Categories Section */
@@ -361,12 +391,14 @@ body {
     font-size: 0.9em;
 }
 
+
 /* Posts Section */
 .posts-section {
     padding: 20px;
     flex: 1;
     overflow-y: auto;
-    height: 100%;
+    max-height: calc(100vh - 80px);
+    margin-bottom: 80%;
     max-width: 50%;
 }
 
@@ -375,6 +407,7 @@ body {
     flex-direction: column;
     gap: 20px;
     margin-top: 20px;
+    margin-bottom: 40px;
 }
 
 .post-card {
