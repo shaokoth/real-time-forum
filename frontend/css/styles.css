@@ -427,6 +427,11 @@ body {
     border-top: 1px solid #e0e0e0;
 }
 
+.post-author {
+  margin-left: auto;
+  margin-right: 10px;
+}
+
 .like-btn {
     background: none;
     border: none;
