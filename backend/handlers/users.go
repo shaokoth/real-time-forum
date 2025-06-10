@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"real-time-forum/backend/database"
@@ -27,7 +26,7 @@ func HandleUsers(w http.ResponseWriter, r *http.Request) {
 	}
 	// Get all users
 	rows, err := database.Db.Query(`
-	SELECT id, nickname, email, first_name, last_name
+	SELECT id,uuid, gender, age, nickname, email, first_name, last_name
 	FROM users
 	ORDER BY nickname ASC
 	`)
@@ -42,7 +41,7 @@ func HandleUsers(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var u models.User
-		err := rows.Scan(&u.ID, &u.Nickname, &u.Email, &u.FirstName, &u.LastName)
+		err := rows.Scan(&u.ID, &u.UUID, &u.Gender, &u.Age, &u.Nickname, &u.Email, &u.FirstName, &u.LastName)
 		if err != nil {
 			http.Error(w, "Error parsing users", http.StatusInternalServerError)
 			return
@@ -51,12 +50,7 @@ func HandleUsers(w http.ResponseWriter, r *http.Request) {
 			users = append(users, u)
 		}
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
-	// Debug print all users
-	for _, u := range users {
-		log.Printf("User: ID=%d, Nickname=%s, Email=%s, FirstName=%s, LastName=%s",
-			u.ID, u.Nickname, u.Email, u.FirstName, u.LastName)
-	}
 	json.NewEncoder(w).Encode(users)
 }
