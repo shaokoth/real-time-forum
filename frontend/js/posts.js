@@ -66,6 +66,12 @@ function displayPosts(posts) {
     const postsList = document.getElementById('posts-list');
     postsList.innerHTML = '';
 
+    if (!Array.isArray(posts)) {
+        postsList.innerHTML = `'<p class="error-message">Failed to load posts. The posts are null, create new Posts inorder to 
+        view them in this category.</p>'`;
+        return;
+    }
+
     posts.forEach(post => {
         const postElement = document.createElement('div');
         postElement.className = 'post-card';
@@ -74,11 +80,11 @@ function displayPosts(posts) {
             <h3>${post.title}</h3>
             <p class="post-content">${post.content}</p>
             <div class="post-meta">
-                <span class="post-author">By ${post.nickname}</span>
+                <span class="post-author">By ${post.nickname}</span> 
                 <span class="post-date">${new Date(post.created_at).toLocaleString()}</span>
             </div>
             <div class="post-categories">
-                ${post.categories.map(cat => `<span class="category-tag">${cat}</span>`).join('')}
+                ${(post.categories || []).map(cat => `<span class="category-tag">${cat}</span>`).join('')}
             </div>
             <div class="post-actions">
                 <button onclick="likePost(${post.post_id})" class="like-btn">👍 ${post.likes || 0}</button>
@@ -202,7 +208,7 @@ async function dislikePost(postId) {
     }
 }
 
-// Toggle comments section visibility
+// // Toggle comments section visibility
 function toggleComments(postId) {
     const commentsSection = document.getElementById(`comments-section-${postId}`);
     if (!commentsSection) return;
