@@ -54,8 +54,9 @@ async function fetchPosts() {
     try {
         const url = currentCategory ? `/posts?category=${encodeURIComponent(currentCategory)}` : '/posts';
         const response = await fetch(url);
-        const posts = await response.json();
-        displayPosts(posts);
+        const data = await response.json();
+        currentUserUUID = data.current_user_uuid;
+        displayPosts(data.posts);
     } catch (error) {
         console.error('Error fetching posts:', error);
     }
@@ -89,6 +90,7 @@ function displayPosts(posts) {
             <div class="post-actions">
                 <button onclick="likePost(${post.post_id})" class="like-btn">👍 ${post.likes || 0}</button>
                 <button onclick="toggleComments(${post.post_id})" class="comment-btn">💬 Comments (${post.comments_count || 0})</button>
+                ${post.user_uuid === currentUserUUID ? `<button onclick="deletePost(${post.post_id})" class="delete-btn">🗑️ Delete</button>` : ''}
             </div>
             <div id="comments-section-${post.post_id}" class="comments-section" style="display: none;">
                 <div id="comments-${post.post_id}" class="comments-container"></div>
@@ -107,8 +109,9 @@ async function filterPostsByCategory(categoryName) {
     try {
         currentCategory = categoryName;
         const response = await fetch(`/posts?category=${encodeURIComponent(categoryName)}`);
-        const posts = await response.json();
-         displayPosts(posts);
+        const data = await response.json();
+        currentUserUUID = data.current_user_uuid;
+        displayPosts(data.posts);
     } catch (error) {
         console.error('Error filtering posts:', error);
     }
@@ -208,6 +211,31 @@ async function dislikePost(postId) {
     }
 }
 
+// Delete post
+async function deletePost(postId) {
+    if (!confirm('Are you sure you want to delete this post?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/posts?post_id=${postId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            fetchPosts();
+        } else {
+            const error = await response.text();
+            alert(error || 'Failed to delete post');
+        }
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        alert('Error deleting post');
+    }
+}
+
+
 // // Toggle comments section visibility
 function toggleComments(postId) {
     const commentsSection = document.getElementById(`comments-section-${postId}`);
@@ -220,6 +248,7 @@ function toggleComments(postId) {
         commentsSection.style.display = 'none';
     }
 }
+
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', () => {
