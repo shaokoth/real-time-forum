@@ -21,6 +21,16 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		// Get category filter from query parameter
 		category := r.URL.Query().Get("category")
 
+		// Get current user if logged in
+		var currentUserUUID string
+		cookie, err := r.Cookie("session_token")
+		if err == nil {
+			user, err := utils.GetUserFromSession(cookie.Value)
+			if err == nil {
+				currentUserUUID = user.UUID
+			}
+		}
+
 		// Base query
 		query := `
 			SELECT p.post_id, p.title, p.content, p.user_uuid, p.created_at,
@@ -42,7 +52,6 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		query += ` GROUP BY p.post_id ORDER BY p.created_at DESC`
 
 		var rows *sql.Rows
-		var err error
 		if category != "" {
 			rows, err = database.Db.Query(query, category)
 		} else {
@@ -75,9 +84,13 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 
 			posts = append(posts, post)
 		}
-		// Return the posts
+
+		// Return the posts with current user UUID
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(posts)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"posts":             posts,
+			"current_user_uuid": currentUserUUID,
+		})
 
 	case "POST":
 		// Create a new post - authentication required
@@ -167,6 +180,97 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"id":      postID,
 			"message": "Post created successfully",
+		})
+
+	case "DELETE":
+		// Delete a post - authentication required
+		cookie, err := r.Cookie("session_token")
+		if err != nil {
+			http.Error(w, "Not logged in", http.StatusUnauthorized)
+			return
+		}
+
+		user, err := utils.GetUserFromSession(cookie.Value)
+		if err != nil {
+			http.Error(w, "Invalid session", http.StatusUnauthorized)
+			return
+		}
+
+		// Get post ID from query parameter
+		postID := r.URL.Query().Get("post_id")
+		if postID == "" {
+			http.Error(w, "Missing post ID", http.StatusBadRequest)
+			return
+		}
+
+		// Start a transaction
+		tx, err := database.Db.Begin()
+		if err != nil {
+			http.Error(w, "Error starting transaction", http.StatusInternalServerError)
+			return
+		}
+		defer tx.Rollback()
+
+		// Check if user owns the post
+		var postUserUUID string
+		err = tx.QueryRow("SELECT user_uuid FROM posts WHERE post_id = ?", postID).Scan(&postUserUUID)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				http.Error(w, "Post not found", http.StatusNotFound)
+			} else {
+				http.Error(w, "Error checking post ownership", http.StatusInternalServerError)
+			}
+			return
+		}
+
+		if postUserUUID != user.UUID {
+			http.Error(w, "Unauthorized to delete this post", http.StatusForbidden)
+			return
+		}
+
+		// Delete post categories
+		_, err = tx.Exec("DELETE FROM post_categories WHERE post_id = ?", postID)
+		if err != nil {
+			http.Error(w, "Error deleting post categories", http.StatusInternalServerError)
+			return
+		}
+
+		// Delete post likes
+		_, err = tx.Exec("DELETE FROM post_likes WHERE post_id = ?", postID)
+		if err != nil {
+			http.Error(w, "Error deleting post likes", http.StatusInternalServerError)
+			return
+		}
+
+		// Delete post comments and their likes
+		_, err = tx.Exec("DELETE FROM comment_likes WHERE comment_id IN (SELECT comment_id FROM comments WHERE post_id = ?)", postID)
+		if err != nil {
+			http.Error(w, "Error deleting comment likes", http.StatusInternalServerError)
+			return
+		}
+
+		_, err = tx.Exec("DELETE FROM comments WHERE post_id = ?", postID)
+		if err != nil {
+			http.Error(w, "Error deleting comments", http.StatusInternalServerError)
+			return
+		}
+
+		// Delete the post
+		_, err = tx.Exec("DELETE FROM posts WHERE post_id = ?", postID)
+		if err != nil {
+			http.Error(w, "Error deleting post", http.StatusInternalServerError)
+			return
+		}
+
+		// Commit the transaction
+		if err := tx.Commit(); err != nil {
+			http.Error(w, "Error committing transaction", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Post deleted successfully",
 		})
 
 	default:
