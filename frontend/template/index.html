@@ -14,16 +14,19 @@
             <a class="forum" href="/">REAL-TIME-FORUM</a>
         </div>
         {{if .IsLoggedIn}}
-        <div class="logo">
-           <div class="dropdown">
-            <button class="dropbtn">
-                <img src="static/image/user.png" alt="User Icon" class="user-icon">
+        <div class="right-section">
+            <button class="add-post-btn" onclick="showCreatePostForm()" title="Create New Post">
+                <div class="plus-icon"></div>
             </button>
-            <div class="dropdown-content">
-                <span>{{.Nickname}}</span>
-                <a href="/logout">Logout</a>
+            <div class="dropdown">
+                <button class="dropbtn">
+                    <img src="static/image/user.png" alt="User Icon" class="user-icon">
+                </button>
+                <div class="dropdown-content">
+                    <span>{{.Nickname}}</span>
+                    <a href="/logout">Logout</a>
+                </div>
             </div>
-           </div>
         </div>
         {{else}}
         <div class="nav-buttons">
@@ -48,11 +51,7 @@
         <div class="posts-section">
             <!-- Posts Header -->
             <div class="posts-header">
-                {{if .IsLoggedIn}}
-                <div class="create-post">
-                    <button id="createPostBtn" onclick="showCreatePostForm()">Create New Post</button>
-                </div>
-                {{end}}
+                <!-- Create post button removed as it's now in the navbar -->
             </div>
 
             <!-- Posts List -->
