@@ -6,9 +6,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const messageInput = document.getElementById("messageInput");
   const sendButton = document.getElementById("sendButton");
   const currentUserID = localStorage.getItem("CurrentUserID");
+  const chatAvatar = document.getElementById("chatAvatar");
+  const chatUserName = document.getElementById("chatUserName");
+  const chatUserStatus = document.getElementById("chatUserStatus");
 
   let socket;
   let currentReceiver = null;
+  let currentReceiverName = null;
   // WebSocket functions
   function connectWebSocket() {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -39,32 +43,71 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   }
 
-  if (!userList) return;
+  function updateUserList(users) {
+    if (!userList) return;
+    userList.innerHTML = ""; // Clear previous entries
+    users.forEach((user) => {
+      createUserItem(user);
+    });
+  }
 
-  fetch("/users")
+  function createUserItem(user) {
+    const userDiv = document.createElement("div");
+    userDiv.className = "user-item";
+
+    userDiv.innerHTML = `
+                    <div class="user-avatar">${user.nickname
+                      .charAt(0)
+                      .toUpperCase()}</div>
+                    <div class="user-info">
+                        <div class="user-name">${user.nickname}</div>
+                        <div class="user-status">Online</div>
+                    </div>
+                `;
+
+    userDiv.onclick = () => {
+      openChat(user.user_uuid, user.nickname, "Online");
+    };
+
+    userList.appendChild(userDiv);
+  }
+
+  function openChat(userId, userName, status) {
+    currentReceiver = userId;
+    currentReceiverName = userName;
+
+    // Update chat header
+    chatAvatar.textContent = userName.charAt(0).toUpperCase();
+    chatUserName.textContent = userName;
+    chatUserStatus.textContent = status;
+
+    // Show chat window, hide user list
+    userList.classList.add("hidden");
+    chatWindow.classList.remove("hidden");
+
+    // Load chat history
+    loadChatHistory(currentReceiver);
+
+    // Focus on input
+    messageInput.focus();
+  }
+
+
+  if (userList) {
+    fetch("/users")
     .then((response) => {
       if (!response.ok) throw new Error("Failed to fetch users");
       return response.json();
     })
     .then((users) => {
-      userList.innerHTML = ""; // Clear previous entries
-      users.forEach((user) => {
-        const userDiv = document.createElement("div");
-        userDiv.className = "user-item";
-        userDiv.textContent = user.nickname;
-        userDiv.onclick = () => {
-          currentReceiver = user.user_uuid; // Save the UUID of the clicked user
-          chatHeader.textContent = `Chat with ${user.nickname}`; // Set chat header
-          chatWindow.classList.remove("hidden"); // Show the chat window
-          loadChatHistory(currentReceiver);
-        };
-        userList.appendChild(userDiv);
-      });
+      updateUserList(users)
     })
     .catch((err) => {
       console.error("Error fetching users:", err);
     });
+  }
 
+  
   function loadChatHistory(otherUserID) {
     fetch(`/messages?with=${otherUserID}&offset=10`)
       .then((response) => {
@@ -78,7 +121,6 @@ document.addEventListener("DOMContentLoaded", function () {
           console.error("Chat history is not an array:", messages);
           return;
         }
-        console.log(messages)
         messages.forEach((message) => {
           displayMessage(message);
         });
@@ -97,18 +139,26 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const messageElement = document.createElement("div");
-    messageElement.className =
-      message.sender_id === currentReceiver ? "received" : "sent";
+    messageElement.className = `message ${
+      message.sender_id === currentUserID ? "sent" : "received"
+    }`;
 
-    messageElement.innerHTML = `
-    <div class="message-content">${message.content}</div>
-    <div class="message-time">${new Date(
-      message.created_at
-    ).toLocaleTimeString()}</div>
-  `;
+    const messageContent = document.createElement("div");
+    messageContent.className = "message-content";
+    messageContent.textContent = message.content;
+
+    const messageTime = document.createElement("div");
+    messageTime.className = "message-time";
+    messageTime.textContent = new Date(message.created_at).toLocaleTimeString();
+    messageTime.style.fontSize = "0.75rem";
+    messageTime.style.opacity = "0.7";
+    messageTime.style.marginTop = "4px";
+
+    messageElement.appendChild(messageContent);
+    messageElement.appendChild(messageTime);
 
     messagesContainer.appendChild(messageElement);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
 
   function sendMessage() {
@@ -141,6 +191,13 @@ document.addEventListener("DOMContentLoaded", function () {
   sendButton.addEventListener("click", sendMessage);
   messageInput.addEventListener("keypress", function (e) {
     if (e.key === "Enter") sendMessage();
+  });
+
+  chatHeader.addEventListener("click", () => {
+    chatWindow.classList.add("hidden");
+    userList.classList.remove("hidden");
+    currentReceiver = null;
+    currentReceiverName = null;
   });
   // Initialize
   connectWebSocket();
