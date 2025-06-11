@@ -170,10 +170,6 @@ func handleBroadcast() {
 		if receiver, ok := Clients[msg.ReceiverID]; ok {
 			receiver.Send <- data
 		}
-		// Also echo back to sender if connected
-		if sender, ok := Clients[msg.SenderID]; ok {
-			sender.Send <- data
-		}
 		mu.Unlock()
 	}
 }
