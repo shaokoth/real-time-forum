@@ -7,43 +7,6 @@ import (
 	"path/filepath"
 )
 
-// var Db *sql.DB
-
-// func InitDB() error {
-// 	var err error
-// 	Db, err = sql.Open("sqlite3", "./data/forum.db")
-// 	if err != nil {
-// 		return fmt.Errorf("failed to open database: %v", err)
-// 	}
-// 	err = Db.Ping()
-// 	if err != nil {
-// 		return fmt.Errorf("failed to ping database: %v", err)
-// 	}
-
-// 	if err = CreateUsersTable(Db); err != nil {
-// 		return err
-// 	}
-
-// 	if err = CreateLikesDislikesTable(Db); err != nil {
-// 		return err
-// 	}
-
-// 	if err = CreateSessionsTable(Db); err != nil {
-// 		return err
-// 	}
-
-// 	if err = CreatePostsTable(Db); err != nil {
-// 		return err
-// 	}
-// 	if err = CreateCommentsTable(Db); err != nil {
-// 		return err
-// 	}
-
-// 	fmt.Println("SUCCESS: Connected to the SQLite database!")
-// 	return nil
-// }
-
-// ==== The creation of the database folder and the database file ====
 func Init() {
 	dataFolder := "data"
 	databaseFile := "forum.db"
@@ -98,11 +61,6 @@ func StartDbConnection(database_file_path string) error {
 	if err = CreateUsersTable(Db); err != nil {
 		return err
 	}
-
-	if err = CreateLikesDislikesTable(Db); err != nil {
-		return err
-	}
-
 	if err = CreateSessionsTable(Db); err != nil {
 		return err
 	}
@@ -113,9 +71,18 @@ func StartDbConnection(database_file_path string) error {
 	if err = CreateCommentsTable(Db); err != nil {
 		return err
 	}
-    if err = CreatePrivateMessages(Db); err != nil {
+	if err = CreatePostCategoriesTable(Db); err != nil {
 		return err
 	}
-	fmt.Println("[SUCCESS]: Connected to the SQLite database!", nil)
+	if err = CreatePrivateMessagesTable(Db); err != nil {
+		return err
+	}
+	if err = CreateCommentLikes(Db); err != nil {
+		return err
+	}
+	if err = CreatePostLikes(Db); err != nil {
+		return err
+	}
+
 	return nil
 }
