@@ -75,6 +75,14 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	Clients[client.UserID] = client
 	mu.Unlock()
 
+	// Broadcast status update
+	statusMsg := models.Message{
+		Type:     "status",
+		SenderID: client.UserID,
+		Online:   true,
+	}
+	broadcast <- statusMsg
+
 	go readMessages(client)
 	go writeMessages(client)
 }
@@ -90,6 +98,14 @@ func readMessages(c *Client) {
 		// 	log.Println(err)
 		// }
 		delete(Clients, c.UserID)
+
+		statusMsg := models.Message{
+			Type:     "status",
+			SenderID: c.UserID,
+			Online:   false,
+		}
+		broadcast <- statusMsg
+
 		mu.Unlock()
 		c.Conn.Close()
 	}()
@@ -166,21 +182,19 @@ func handleBroadcast() {
 		}
 
 		mu.Lock()
-		// Send to receiver
-		if receiver, ok := Clients[msg.ReceiverID]; ok {
-			receiver.Send <- data
+		if msg.Type == "status" {
+			for _, client := range Clients {
+				client.Send <- data
+			}
+		} else if msg.Type == "message" && msg.ReceiverID != "" {
+			if receiver, ok := Clients[msg.ReceiverID]; ok {
+				receiver.Send <- data
+			}
+		} else if msg.Type == "typing" || msg.Type == "stop_typing" {
+			if receiver, ok := Clients[msg.ReceiverID]; ok {
+				receiver.Send <- data
+			}
 		}
 		mu.Unlock()
 	}
 }
-
-// func getOnlineUserIDs() []string {
-// 	mu.Lock()
-// 	defer mu.Unlock()
-
-// 	var onUsers []string
-// 	for id := range Clients {
-// 		onUsers = append(onUsers, id)
-// 	}
-// 	return onUsers
-// }
