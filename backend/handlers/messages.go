@@ -41,8 +41,8 @@ func HandleGetMessages(w http.ResponseWriter, r *http.Request) {
 		SELECT sender_id, receiver_id, content, created_at
 		FROM private_messages
 		WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
-		ORDER BY created_at ASC
-		LIMIT 10`,
+		ORDER BY created_at asc
+		`,
 		otherUserID, user.UUID, user.UUID, otherUserID, offset)
 		
 	if err != nil {
