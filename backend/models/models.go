@@ -8,12 +8,13 @@ import (
 )
 
 type Message struct {
-	Type       string      `json:"type"`
-	ID         string      `json:"id"`
-	Content    interface{} `json:"content"`
-	SenderID   string      `json:"sender_id"`
-	ReceiverID string      `json:"receiver_id"`
-	CreatedAt  time.Time   `json:"created_at"`
+	ID         string    `json:"id"`
+	Content    string    `json:"content"`
+	SenderID   string    `json:"sender_id"`
+	ReceiverID string    `json:"receiver_id"`
+	CreatedAt  time.Time `json:"created_at"`
+	Type       string    `json:"type"` // message, typing, stop_typing
+	Online     bool      `json:"online, omitempty"`
 }
 
 type Reaction struct {
