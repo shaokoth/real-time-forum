@@ -88,7 +88,7 @@ function displayPosts(posts) {
                 ${(post.categories || []).map(cat => `<span class="category-tag">${cat}</span>`).join('')}
             </div>
             <div class="post-actions">
-                <button onclick="likePost(${post.post_id})" class="like-btn">👍 ${post.likes || 1}</button>
+                <button onclick="likePost(${post.post_id})" class="like-btn">👍 ${post.likes || 0}</button>
 
                 <button onclick="toggleComments(${post.post_id})" class="comment-btn">💬 Comments (${post.comments_count || 0})</button>
                 ${post.user_uuid === currentUserUUID ? `<button onclick="deletePost(${post.post_id})" class="delete-btn">🗑️ Delete</button>` : ''}
