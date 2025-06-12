@@ -14,6 +14,7 @@ type Message struct {
 	ReceiverID string    `json:"receiver_id"`
 	CreatedAt  time.Time `json:"created_at"`
 	Type       string    `json:"type"` // message, typing, stop_typing
+	Online     bool      `json:"online, omitempty"`
 }
 
 type Reaction struct {
