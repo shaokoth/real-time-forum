@@ -13,7 +13,9 @@ document.addEventListener("DOMContentLoaded", function () {
   let socket;
   let currentReceiver = null;
   let currentReceiverName = null;
-  // WebSocket functions
+  let isOnline=true
+  
+
   function connectWebSocket() {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = protocol + window.location.host + "/ws";
@@ -30,6 +32,8 @@ document.addEventListener("DOMContentLoaded", function () {
         updateUserList(message.users);
       } else if (message.type === "message") {
         displayMessage(message);
+      } else if (message.type === "status") {
+        updateUserStatus(message.sender_id, message.online);
       }
     };
 
@@ -51,6 +55,19 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  function updateUserStatus(userId, isOnline) {
+    const userItems = document.querySelectorAll(".user-item");
+    userItems.forEach((item) => {
+      if (item.dataset.userid === userId) {
+        const statusDiv = item.querySelector(".user-status");
+        if (statusDiv) {
+          statusDiv.textContent = isOnline ? "Online" : "Offline";
+          statusDiv.style.color = isOnline ? "green" : "gray";
+        }
+      }
+    });
+  }
+
   function createUserItem(user) {
     const userDiv = document.createElement("div");
     userDiv.className = "user-item";
@@ -61,12 +78,14 @@ document.addEventListener("DOMContentLoaded", function () {
                       .toUpperCase()}</div>
                     <div class="user-info">
                         <div class="user-name">${user.nickname}</div>
-                        <div class="user-status">Online</div>
+                        <div class="user-status" style="color: ${
+                          isOnline ? "green" : "gray"
+                        }">${isOnline ? "Online" : "Offline"}</div>
                     </div>
                 `;
 
     userDiv.onclick = () => {
-      openChat(user.user_uuid, user.nickname, "Online");
+      openChat(user.user_uuid, user.nickname, isOnline ? "Online" : "Offline");
     };
 
     userList.appendChild(userDiv);
@@ -92,22 +111,20 @@ document.addEventListener("DOMContentLoaded", function () {
     messageInput.focus();
   }
 
-
   if (userList) {
     fetch("/users")
-    .then((response) => {
-      if (!response.ok) throw new Error("Failed to fetch users");
-      return response.json();
-    })
-    .then((users) => {
-      updateUserList(users)
-    })
-    .catch((err) => {
-      console.error("Error fetching users:", err);
-    });
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to fetch users");
+        return response.json();
+      })
+      .then((users) => {
+        updateUserList(users);
+      })
+      .catch((err) => {
+        console.error("Error fetching users:", err);
+      });
   }
 
-  
   function loadChatHistory(otherUserID) {
     fetch(`/messages?with=${otherUserID}&offset=10`)
       .then((response) => {
