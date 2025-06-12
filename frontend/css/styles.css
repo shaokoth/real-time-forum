@@ -821,7 +821,8 @@ body {
 .navbar .right-section {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 50px;
+    margin-right: 5%; 
 }
     
 .no-comments {
