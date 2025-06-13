@@ -299,22 +299,20 @@
         <!-- Private Messages Section -->
         {{if .IsLoggedIn}}
         <div class="chats">
-          <h2>Messages</h2>
+          <h2 id="messagesTitle">Messages</h2>
           <div id="userList" class="user-list"></div>
           <!-- users will be populated here -->
           <div id="chatWindow" class="chat-window hidden">
-            <div id="chatHeader" class="chat-header"></div>
-            <div id="chatAvatar" class="chat-avatar"></div>
-            <div class="chat-user-details">
-              <div id="chatUserName" class="chat-username"></div>
-              <div id="chatUserStatus" class="chat-status"></div>
+            <div id="chatHeader" class="chat-header">
+              <div id="chatAvatar" class="chat-avatar"></div>
+              <div class="chat-user-details">
+                <div id="chatUserName" class="chat-username"></div>
+                <div id="chatUserStatus" class="chat-status"></div>
+              </div>
             </div>
             <div id="messages" class="messages"></div>
             <div class="message-input-container">
-              <p
-                id="typingIndicator"
-                style="margin: 5px 0; font-style: italic; color: gray"
-              ></p>
+              <p id="typingIndicator"></p>
 
               <input
                 type="text"
