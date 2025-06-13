@@ -11,11 +11,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const chatUserStatus = document.getElementById("chatUserStatus");
   const typingIndicator = document.getElementById("typingIndicator");
 
-
   let socket;
   let currentReceiver = null;
   let currentReceiverName = null;
-  let typingTimeout
+  let typingTimeout;
 
   function connectWebSocket() {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -98,6 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
   `;
 
     userDiv.onclick = () => {
+      document.getElementById("messagesTitle").style.display = "none";
       openChat(user.user_uuid, user.nickname, onlineStatus);
     };
 
@@ -261,6 +261,8 @@ document.addEventListener("DOMContentLoaded", function () {
     userList.classList.remove("hidden");
     currentReceiver = null;
     currentReceiverName = null;
+    document.getElementById("messagesTitle").style.display = "block";
+
   });
   // Initialize
   connectWebSocket();
