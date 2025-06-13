@@ -9,31 +9,47 @@
   <body>
     <!-- Navbar with login/signup buttons -->
     <div class="navbar">
-        <div class="left-section">
-            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
-            <a class="forum" href="/">REAL-TIME-FORUM</a>
+      <div class="left-section">
+        <button
+          class="theme-toggle"
+          onclick="toggleTheme()"
+          title="Toggle Theme"
+        >
+          🌓
+        </button>
+        <a class="forum" href="/">REAL-TIME-FORUM</a>
+      </div>
+      {{if .IsLoggedIn}}
+      <div class="right-section">
+        <button
+          class="add-post-btn"
+          onclick="showCreatePostForm()"
+          title="Create New Post"
+        >
+          <div class="plus-icon"></div>
+        </button>
+        <div class="dropdown">
+          <button class="dropbtn">
+            <img
+              src="static/image/user.png"
+              alt="User Icon"
+              class="user-icon"
+            />
+          </button>
+          <div class="dropdown-content">
+            <span>{{.Nickname}}</span>
+            <a href="/logout">Logout</a>
+          </div>
         </div>
-        {{if .IsLoggedIn}}
-        <div class="right-section">
-            <button class="add-post-btn" onclick="showCreatePostForm()" title="Create New Post">
-                <div class="plus-icon"></div>
-            </button>
-            <div class="dropdown">
-                <button class="dropbtn">
-                    <img src="static/image/user.png" alt="User Icon" class="user-icon">
-                </button>
-                <div class="dropdown-content">
-                    <span>{{.Nickname}}</span>
-                    <a href="/logout">Logout</a>
-                </div>
-            </div>
-        </div>
-        {{else}}
-        <div class="nav-buttons">
-            <button class="login-button" onclick="showLoginForm()">Log In</button>
-            <button class="signup-button" onclick="showSignupForm()">Sign Up</button>
-        </div>
-        {{end}}
+      </div>
+      {{else}}
+      <div class="nav-buttons">
+        <button class="login-button" onclick="showLoginForm()">Log In</button>
+        <button class="signup-button" onclick="showSignupForm()">
+          Sign Up
+        </button>
+      </div>
+      {{end}}
     </div>
 
     <!-- Homepage Content -->
@@ -295,6 +311,11 @@
             </div>
             <div id="messages" class="messages"></div>
             <div class="message-input-container">
+              <p
+                id="typingIndicator"
+                style="margin: 5px 0; font-style: italic; color: gray"
+              ></p>
+
               <input
                 type="text"
                 id="messageInput"

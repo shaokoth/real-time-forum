@@ -9,10 +9,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const chatAvatar = document.getElementById("chatAvatar");
   const chatUserName = document.getElementById("chatUserName");
   const chatUserStatus = document.getElementById("chatUserStatus");
+  const typingIndicator = document.getElementById("typingIndicator");
+
 
   let socket;
   let currentReceiver = null;
   let currentReceiverName = null;
+  let typingTimeout
 
   function connectWebSocket() {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -33,6 +36,16 @@ document.addEventListener("DOMContentLoaded", function () {
       } else if (message.type === "status") {
         console.log(message);
         updateUserStatus(message.sender_id, message.online);
+      } else if (
+        message.type === "typing" &&
+        message.sender_id === currentReceiver
+      ) {
+        typingIndicator.textContent = "Typing...";
+      } else if (
+        message.type === "stop_typing" &&
+        message.sender_id === currentReceiver
+      ) {
+        typingIndicator.textContent = "";
       }
     };
 
@@ -71,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const userDiv = document.createElement("div");
     userDiv.className = "user-item";
     userDiv.dataset.userId = user.user_uuid; // camelCase used here
-    console.log(user)
+    console.log(user);
 
     const onlineStatus = user.isOnline ? "Online" : "Offline";
     const statusColor = user.isOnline ? "green" : "gray";
@@ -204,6 +217,39 @@ document.addEventListener("DOMContentLoaded", function () {
       created_at: new Date().toISOString(),
     });
   }
+
+  messageInput.addEventListener("input", () => {
+    //Send "typing" message
+    socket.send(
+      JSON.stringify({
+        type: "typing",
+        receiver_id: currentReceiver,
+      })
+    );
+    // Clear existing timeout
+    clearTimeout(typingTimeout);
+
+    // Send "stop_typing" after 1 second of inactivity
+    typingTimeout = setTimeout(() => {
+      socket.send(
+        JSON.stringify({
+          type: "stop_typing",
+          receiver_id: currentReceiver,
+        })
+      );
+    }, 5000);
+  });
+
+  messageInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      socket.send(
+        JSON.stringify({
+          type: "stop_typing",
+          receiver_id: currentReceiver,
+        })
+      );
+    }
+  });
 
   sendButton.addEventListener("click", sendMessage);
   messageInput.addEventListener("keypress", function (e) {
