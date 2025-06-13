@@ -13,8 +13,6 @@ document.addEventListener("DOMContentLoaded", function () {
   let socket;
   let currentReceiver = null;
   let currentReceiverName = null;
-  let isOnline=true
-  
 
   function connectWebSocket() {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -33,6 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else if (message.type === "message") {
         displayMessage(message);
       } else if (message.type === "status") {
+        console.log(message);
         updateUserStatus(message.sender_id, message.online);
       }
     };
@@ -58,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function updateUserStatus(userId, isOnline) {
     const userItems = document.querySelectorAll(".user-item");
     userItems.forEach((item) => {
-      if (item.dataset.userid === userId) {
+      if (item.dataset.userId === userId) {
         const statusDiv = item.querySelector(".user-status");
         if (statusDiv) {
           statusDiv.textContent = isOnline ? "Online" : "Offline";
@@ -71,21 +70,22 @@ document.addEventListener("DOMContentLoaded", function () {
   function createUserItem(user) {
     const userDiv = document.createElement("div");
     userDiv.className = "user-item";
+    userDiv.dataset.userId = user.user_uuid; // camelCase used here
+    console.log(user)
+
+    const onlineStatus = user.isOnline ? "Online" : "Offline";
+    const statusColor = user.isOnline ? "green" : "gray";
 
     userDiv.innerHTML = `
-                    <div class="user-avatar">${user.nickname
-                      .charAt(0)
-                      .toUpperCase()}</div>
-                    <div class="user-info">
-                        <div class="user-name">${user.nickname}</div>
-                        <div class="user-status" style="color: ${
-                          isOnline ? "green" : "gray"
-                        }">${isOnline ? "Online" : "Offline"}</div>
-                    </div>
-                `;
+    <div class="user-avatar">${user.nickname.charAt(0).toUpperCase()}</div>
+    <div class="user-info">
+      <div class="user-name">${user.nickname}</div>
+      <div class="user-status" style="color: ${statusColor}">${onlineStatus}</div>
+    </div>
+  `;
 
     userDiv.onclick = () => {
-      openChat(user.user_uuid, user.nickname, isOnline ? "Online" : "Offline");
+      openChat(user.user_uuid, user.nickname, onlineStatus);
     };
 
     userList.appendChild(userDiv);
