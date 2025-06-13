@@ -15,6 +15,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let currentReceiver = null;
   let currentReceiverName = null;
   let typingTimeout;
+  let messageOffset = 0;
+  let isLoadingMessages = false;
 
   function connectWebSocket() {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -107,6 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function openChat(userId, userName, status) {
     currentReceiver = userId;
     currentReceiverName = userName;
+    messageOffset = 0;
 
     // Update chat header
     chatAvatar.textContent = userName.charAt(0).toUpperCase();
@@ -118,7 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
     chatWindow.classList.remove("hidden");
 
     // Load chat history
-    loadChatHistory(currentReceiver);
+    loadChatHistory(currentReceiver, false);
 
     // Focus on input
     messageInput.focus();
@@ -138,36 +141,55 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
-  function loadChatHistory(otherUserID) {
-    fetch(`/messages?with=${otherUserID}&offset=10`)
+  function loadChatHistory(otherUserID, append = false) {
+    if (isLoadingMessages) return;
+
+    isLoadingMessages = true;
+    fetch(`/messages?with=${otherUserID}&offset=${messageOffset}`)
       .then((response) => {
         if (!response.ok) throw new Error("Failed to fetch messages");
         return response.json();
       })
       .then((messages) => {
-        messagesContainer.innerHTML = ""; // Clear previous messages
-
         if (!Array.isArray(messages)) {
           console.error("Chat history is not an array:", messages);
           return;
         }
-        messages.forEach((message) => {
-          displayMessage(message);
+
+        if (!append) {
+          messagesContainer.innerHTML = ""; // On initial open
+        }
+
+        const scrollPositionBefore = messagesContainer.scrollHeight;
+
+        messages.reverse().forEach((message) => {
+          const messageElement = createMessageElement(message);
+          if (append) {
+            messagesContainer.prepend(messageElement);
+          } else {
+            messagesContainer.appendChild(messageElement);
+          }
         });
+
+        // Adjust scroll position to maintain view if loading older messages
+        if (append) {
+          messagesContainer.scrollTop =
+            messagesContainer.scrollHeight - scrollPositionBefore;
+        } else {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        messageOffset += 10;
       })
       .catch((error) => {
         console.error("Error loading chat history:", error);
+      })
+      .finally(() => {
+        isLoadingMessages = false;
       });
   }
 
-  function displayMessage(message) {
-    if (
-      message.sender_id !== currentReceiver &&
-      message.receiver_id !== currentReceiver
-    ) {
-      return; // Not part of current chat
-    }
-
+  function createMessageElement(message) {
     const messageElement = document.createElement("div");
     messageElement.className = `message ${
       message.sender_id === currentUserID ? "sent" : "received"
@@ -187,8 +209,7 @@ document.addEventListener("DOMContentLoaded", function () {
     messageElement.appendChild(messageContent);
     messageElement.appendChild(messageTime);
 
-    messagesContainer.appendChild(messageElement);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    return messageElement;
   }
 
   function sendMessage() {
@@ -240,6 +261,26 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 5000);
   });
 
+  function throttle(func, limit) {
+    let inThrottle;
+    return function () {
+      if (!inThrottle) {
+        func.apply(this, arguments);
+        inThrottle = true;
+        setTimeout(() => (inThrottle = false), limit);
+      }
+    };
+  }
+
+  messagesContainer.addEventListener(
+    "scroll",
+    throttle(() => {
+      if (messagesContainer.scrollTop < 50 && currentReceiver) {
+        loadChatHistory(currentReceiver, true);
+      }
+    }, 1000) // 1 second throttle
+  );
+
   messageInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       socket.send(
@@ -262,7 +303,6 @@ document.addEventListener("DOMContentLoaded", function () {
     currentReceiver = null;
     currentReceiverName = null;
     document.getElementById("messagesTitle").style.display = "block";
-
   });
   // Initialize
   connectWebSocket();
