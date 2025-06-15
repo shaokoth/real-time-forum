@@ -26,7 +26,7 @@ func Routers() (*http.ServeMux, error) {
 
 	// Posts and categories can be viewed without authentication
 	mux.HandleFunc("/posts", handlers.HandlePosts)
-	mux.HandleFunc("/imageUpload", handlers.HandleImageUpload)
+	mux.HandleFunc("/upload-image", handlers.HandleImageUpload)
 	mux.HandleFunc("/comments", handlers.HandleComments)
 	mux.HandleFunc("/categories", handlers.HandleGetCategories)
 	mux.HandleFunc("/users", handlers.HandleUsers)

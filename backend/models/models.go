@@ -14,7 +14,7 @@ type Message struct {
 	ReceiverID string    `json:"receiver_id"`
 	CreatedAt  time.Time `json:"created_at"`
 	Type       string    `json:"type"` // message, typing, stop_typing
-	Online     bool      `json:"online, omitempty"`
+	Online     bool      `json:"online"`
 }
 
 type Reaction struct {
@@ -55,7 +55,6 @@ type Post struct {
 	Nickname      string    `json:"nickname"`
 	Categories    []string  `json:"categories"`
 	Likes         int       `json:"likes"`
-	// Filepath      string    `json:"filepath"`
 	Dislikes      int       `json:"dislikes"`
 	ImageUrl      string    `json:"image_url"`
 	CommentsCount int       `json:"comments_count"`

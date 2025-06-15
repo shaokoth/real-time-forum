@@ -57,7 +57,7 @@ func HandleImageUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	newFilename := fmt.Sprintf("%s-%d%s", uuid.New().String(), time.Now().UnixNano(), fileExtension)
-	filepath := UploadsDir + newFilename
+	filepath := filepath.Join(UploadsDir, newFilename)
 
 	// Save file
 	dst, err := os.Create(filepath)

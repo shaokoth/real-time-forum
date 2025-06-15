@@ -34,7 +34,7 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		// Base query
 		query := `
 			SELECT p.post_id, p.title, p.content, p.user_uuid, p.created_at,
-				   u.nickname,
+				   u.nickname, p.image_url,
 				   GROUP_CONCAT(pc.name) as categories,
 				   (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id AND is_like = 1) as likes,
 				   (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id AND is_like = 0) as dislikes,
@@ -68,7 +68,7 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		for rows.Next() {
 			var post models.Post
 			var categoriesStr string
-			err = rows.Scan(&post.Post_id, &post.Title, &post.Content, &post.User_uuid, &post.CreatedAt, &post.Nickname,
+			err = rows.Scan(&post.Post_id, &post.Title, &post.Content, &post.User_uuid, &post.CreatedAt, &post.Nickname,&post.ImageUrl,
 				&categoriesStr, &post.Likes, &post.Dislikes, &post.CommentsCount)
 			if err != nil {
 				http.Error(w, "Error parsing posts", http.StatusInternalServerError)
@@ -110,7 +110,7 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 			Title   string `json:"title"`
 			Content string `json:"content"`
 			Numbers []int  `json:"categories"`
-			ImageUrl string`json:image_url`
+			ImageUrl string`json:"image_url"`
 		}
 		err = json.NewDecoder(r.Body).Decode(&post)
 		if err != nil {
@@ -143,7 +143,7 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 
 		// Insert the post
 		result, err := tx.Exec(
-			"INSERT INTO posts (title, content, user_uuid, image_url) VALUES (?, ?, ?)",
+			"INSERT INTO posts (title, content, user_uuid, image_url) VALUES (?, ?, ?, ?)",
 			post.Title, post.Content, user.UUID,post.ImageUrl,
 		)
 		if err != nil {
