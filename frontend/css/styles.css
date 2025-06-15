@@ -566,6 +566,22 @@ body {
   background: var(--accent-hover);
 }
 
+.post-image-container {
+    width: 100%;
+    max-width: 900px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+
+  .post-image {
+    width: 100%;
+    height: auto;
+    max-height: 500px;
+    border-radius: 8px;
+    object-fit: cover;
+    display: block;
+  }
+
 #create-post-form {
   position: fixed;
   top: 0;
