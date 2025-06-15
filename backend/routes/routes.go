@@ -16,6 +16,8 @@ func Routers() (*http.ServeMux, error) {
 	mux.Handle("/js/", http.StripPrefix("/js/", scriptServer))
 	imageServer := http.FileServer(http.Dir("frontend/image"))
 	mux.Handle("/static/image/", http.StripPrefix("/static/image/", imageServer))
+	uploadServer := http.FileServer(http.Dir("./uploads/"))
+	mux.Handle("/uploads/", http.StripPrefix("/uploads/", uploadServer))
 
 	mux.HandleFunc("/", handlers.HandleHomepage)
 	mux.HandleFunc("/register", handlers.RegisterUser)
@@ -24,11 +26,11 @@ func Routers() (*http.ServeMux, error) {
 
 	// Posts and categories can be viewed without authentication
 	mux.HandleFunc("/posts", handlers.HandlePosts)
+	mux.HandleFunc("/imageUpload", handlers.HandleImageUpload)
 	mux.HandleFunc("/comments", handlers.HandleComments)
 	mux.HandleFunc("/categories", handlers.HandleGetCategories)
 	mux.HandleFunc("/users", handlers.HandleUsers)
 
-	
 	// These endpoints require authentication
 	mux.HandleFunc("/ws", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleWebSocket)))
 	mux.HandleFunc("/messages", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMessages)))
