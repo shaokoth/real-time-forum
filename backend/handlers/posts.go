@@ -110,6 +110,7 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 			Title   string `json:"title"`
 			Content string `json:"content"`
 			Numbers []int  `json:"categories"`
+			ImageUrl string`json:image_url`
 		}
 		err = json.NewDecoder(r.Body).Decode(&post)
 		if err != nil {
@@ -142,8 +143,8 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 
 		// Insert the post
 		result, err := tx.Exec(
-			"INSERT INTO posts (title, content, user_uuid) VALUES (?, ?, ?)",
-			post.Title, post.Content, user.UUID,
+			"INSERT INTO posts (title, content, user_uuid, image_url) VALUES (?, ?, ?)",
+			post.Title, post.Content, user.UUID,post.ImageUrl,
 		)
 		if err != nil {
 			http.Error(w, "Error creating post", http.StatusInternalServerError)
