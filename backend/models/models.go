@@ -55,9 +55,9 @@ type Post struct {
 	Nickname      string    `json:"nickname"`
 	Categories    []string  `json:"categories"`
 	Likes         int       `json:"likes"`
-	Filepath      string    `json:"filepath"`
+	// Filepath      string    `json:"filepath"`
 	Dislikes      int       `json:"dislikes"`
-	Filename      string    `json:"filename"`
+	ImageUrl      string    `json:"image_url"`
 	CommentsCount int       `json:"comments_count"`
 }
 
