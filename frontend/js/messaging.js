@@ -10,6 +10,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const chatUserName = document.getElementById("chatUserName");
   const chatUserStatus = document.getElementById("chatUserStatus");
   const typingIndicator = document.getElementById("typingIndicator");
+  const emptyState = document.getElementById("emptyState");
+  const messageInputContainer = document.getElementById(
+    "messageInputContainer"
+  );
+  const searchInput = document.getElementById("searchInput");
+  const backButton = document.getElementById("backButton");
+  const usersSidebar = document.getElementById("usersSidebar");
 
   let socket;
   let currentReceiver = null;
@@ -17,6 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let typingTimeout;
   let messageOffset = 0;
   let isLoadingMessages = false;
+  let allUsers = [];
 
   function connectWebSocket() {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -41,18 +49,18 @@ document.addEventListener("DOMContentLoaded", function () {
         message.type === "typing" &&
         message.sender_id === currentReceiver
       ) {
-        typingIndicator.textContent = "Typing...";
+        showTypingIndicator();
       } else if (
         message.type === "stop_typing" &&
         message.sender_id === currentReceiver
       ) {
-        typingIndicator.textContent = "";
+        hideTypingIndicator();
       }
     };
 
     socket.onclose = function (event) {
       console.log("WebSocket disconnected");
-      setTimeout(connectWebSocket, 3000); // Reconnect after 3 seconds
+      setTimeout(connectWebSocket, 3000);
     };
 
     socket.onerror = function (error) {
@@ -62,8 +70,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function updateUserList(users) {
     if (!userList) return;
-    userList.innerHTML = ""; // Clear previous entries
-    users.forEach((user) => {
+    allUsers = users;
+    renderFilteredUsers();
+  }
+
+  function renderFilteredUsers() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const filteredUsers = allUsers.filter((user) =>
+      user.nickname.toLowerCase().includes(searchTerm)
+    );
+
+    userList.innerHTML = "";
+    filteredUsers.forEach((user) => {
       createUserItem(user);
     });
   }
@@ -72,34 +90,49 @@ document.addEventListener("DOMContentLoaded", function () {
     const userItems = document.querySelectorAll(".user-item");
     userItems.forEach((item) => {
       if (item.dataset.userId === userId) {
-        const statusDiv = item.querySelector(".user-status");
-        if (statusDiv) {
-          statusDiv.textContent = isOnline ? "Online" : "Offline";
-          statusDiv.style.color = isOnline ? "green" : "gray";
+        const statusIndicator = item.querySelector(".status-indicator");
+        const statusText = item.querySelector(".user-status");
+        if (statusIndicator && statusText) {
+          statusIndicator.className = `status-indicator ${
+            isOnline ? "online" : "offline"
+          }`;
+          statusText.textContent = isOnline ? "Online" : "Offline";
         }
       }
     });
+
+    // Update chat header if this is the current conversation
+    if (currentReceiver === userId) {
+      chatUserStatus.textContent = isOnline ? "Online" : "Offline";
+      const chatStatusIndicator = chatAvatar.querySelector(".status-indicator");
+      if (chatStatusIndicator) {
+        chatStatusIndicator.className = `status-indicator ${
+          isOnline ? "online" : "offline"
+        }`;
+      }
+    }
   }
 
   function createUserItem(user) {
     const userDiv = document.createElement("div");
     userDiv.className = "user-item";
-    userDiv.dataset.userId = user.user_uuid; // camelCase used here
-    console.log(user);
+    userDiv.dataset.userId = user.user_uuid;
 
     const onlineStatus = user.isOnline ? "Online" : "Offline";
-    const statusColor = user.isOnline ? "green" : "gray";
+    const statusClass = user.isOnline ? "online" : "offline";
 
     userDiv.innerHTML = `
-    <div class="user-avatar">${user.nickname.charAt(0).toUpperCase()}</div>
-    <div class="user-info">
-      <div class="user-name">${user.nickname}</div>
-      <div class="user-status" style="color: ${statusColor}">${onlineStatus}</div>
-    </div>
-  `;
+                    <div class="user-avatar">
+                        ${user.nickname.charAt(0).toUpperCase()}
+                        <div class="status-indicator ${statusClass}"></div>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">${user.nickname}</div>
+                        <div class="user-status">${onlineStatus}</div>
+                    </div>
+                `;
 
     userDiv.onclick = () => {
-      document.getElementById("messagesTitle").style.display = "none";
       openChat(user.user_uuid, user.nickname, onlineStatus);
     };
 
@@ -111,34 +144,40 @@ document.addEventListener("DOMContentLoaded", function () {
     currentReceiverName = userName;
     messageOffset = 0;
 
+    // Update active user in sidebar
+    document.querySelectorAll(".user-item").forEach((item) => {
+      item.classList.remove("active");
+    });
+    document
+      .querySelector(`[data-user-id="${userId}"]`)
+      .classList.add("active");
+
     // Update chat header
-    chatAvatar.textContent = userName.charAt(0).toUpperCase();
+    chatAvatar.innerHTML = `
+                    ${userName.charAt(0).toUpperCase()}
+                    <div class="status-indicator ${
+                      status === "Online" ? "online" : "offline"
+                    }"></div>
+                `;
     chatUserName.textContent = userName;
     chatUserStatus.textContent = status;
 
-    // Show chat window, hide user list
-    userList.classList.add("hidden");
-    chatWindow.classList.remove("hidden");
+    // Show chat interface, hide empty state
+    emptyState.style.display = "none";
+    chatHeader.style.display = "flex";
+    messagesContainer.style.display = "flex";
+    messageInputContainer.style.display = "block";
+
+    // On mobile, hide sidebar and show chat
+    if (window.innerWidth <= 768) {
+      usersSidebar.classList.add("hidden");
+    }
 
     // Load chat history
     loadChatHistory(currentReceiver, false);
 
     // Focus on input
     messageInput.focus();
-  }
-
-  if (userList) {
-    fetch("/users")
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to fetch users");
-        return response.json();
-      })
-      .then((users) => {
-        updateUserList(users);
-      })
-      .catch((err) => {
-        console.error("Error fetching users:", err);
-      });
   }
 
   function loadChatHistory(otherUserID, append = false) {
@@ -157,7 +196,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (!append) {
-          messagesContainer.innerHTML = ""; // On initial open
+          messagesContainer.innerHTML = "";
         }
 
         const scrollPositionBefore = messagesContainer.scrollHeight;
@@ -171,7 +210,6 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         });
 
-        // Adjust scroll position to maintain view if loading older messages
         if (append) {
           messagesContainer.scrollTop =
             messagesContainer.scrollHeight - scrollPositionBefore;
@@ -201,36 +239,55 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const messageTime = document.createElement("div");
     messageTime.className = "message-time";
-    messageTime.textContent = new Date(message.created_at).toLocaleTimeString();
-    messageTime.style.fontSize = "0.75rem";
-    messageTime.style.opacity = "0.7";
-    messageTime.style.marginTop = "4px";
+    messageTime.textContent = new Date(message.created_at).toLocaleTimeString(
+      [],
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    );
 
+    messageContent.appendChild(messageTime);
     messageElement.appendChild(messageContent);
-    messageElement.appendChild(messageTime);
 
     return messageElement;
   }
 
+  function displayMessage(message) {
+    if (
+      message.sender_id === currentReceiver ||
+      message.receiver_id === currentReceiver ||
+      message.sender_id === currentUserID
+    ) {
+      const messageElement = createMessageElement(message);
+      messagesContainer.appendChild(messageElement);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+  }
+
   function sendMessage() {
     const content = messageInput.value.trim();
-    messageInput.value = "";
     if (!content || !currentReceiver) return;
 
     const message = {
-      type: "message", // Optional: helpful for distinguishing message types
-      sender_id: currentUserID, // <-- You must make sure currentUserID is set
+      type: "message",
+      sender_id: currentUserID,
       receiver_id: currentReceiver,
       content: content,
     };
 
-    // Send via WebSocket
     socket.send(JSON.stringify(message));
-
-    // Clear input
     messageInput.value = "";
 
-    // Optimistically show the message (assumes it's sent)
+    // Stop typing indicator
+    socket.send(
+      JSON.stringify({
+        type: "stop_typing",
+        receiver_id: currentReceiver,
+      })
+    );
+
+    // Optimistically show the message
     displayMessage({
       sender_id: currentUserID,
       receiver_id: currentReceiver,
@@ -239,27 +296,31 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  messageInput.addEventListener("input", () => {
-    //Send "typing" message
-    socket.send(
-      JSON.stringify({
-        type: "typing",
-        receiver_id: currentReceiver,
-      })
-    );
-    // Clear existing timeout
-    clearTimeout(typingTimeout);
+  function showTypingIndicator() {
+    const existingIndicator = document.querySelector(".typing-indicator");
+    if (existingIndicator) return;
 
-    // Send "stop_typing" after 1 second of inactivity
-    typingTimeout = setTimeout(() => {
-      socket.send(
-        JSON.stringify({
-          type: "stop_typing",
-          receiver_id: currentReceiver,
-        })
-      );
-    }, 5000);
-  });
+    const typingDiv = document.createElement("div");
+    typingDiv.className = "typing-indicator";
+    typingDiv.innerHTML = `
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                    <span style="font-size: 0.75rem; color: var(--gray-500);">Typing...</span>
+                `;
+
+    messagesContainer.appendChild(typingDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+
+  function hideTypingIndicator() {
+    const typingIndicator = document.querySelector(".typing-indicator");
+    if (typingIndicator) {
+      typingIndicator.remove();
+    }
+  }
 
   function throttle(func, limit) {
     let inThrottle;
@@ -272,38 +333,73 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   }
 
-  messagesContainer.addEventListener(
-    "scroll",
-    throttle(() => {
-      if (messagesContainer.scrollTop < 50 && currentReceiver) {
-        loadChatHistory(currentReceiver, true);
-      }
-    }, 1000) // 1 second throttle
-  );
+  // Event Listeners
+  searchInput.addEventListener("input", renderFilteredUsers);
 
-  messageInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
+  messageInput.addEventListener("input", () => {
+    if (!currentReceiver) return;
+
+    socket.send(
+      JSON.stringify({
+        type: "typing",
+        receiver_id: currentReceiver,
+      })
+    );
+
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
       socket.send(
         JSON.stringify({
           type: "stop_typing",
           receiver_id: currentReceiver,
         })
       );
+    }, 1000);
+  });
+
+  messageInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendMessage();
     }
   });
 
   sendButton.addEventListener("click", sendMessage);
-  messageInput.addEventListener("keypress", function (e) {
-    if (e.key === "Enter") sendMessage();
-  });
 
-  chatHeader.addEventListener("click", () => {
-    chatWindow.classList.add("hidden");
-    userList.classList.remove("hidden");
+  backButton.addEventListener("click", () => {
+    usersSidebar.classList.remove("hidden");
+    emptyState.style.display = "flex";
+    chatHeader.style.display = "none";
+    messagesContainer.style.display = "none";
+    messageInputContainer.style.display = "none";
     currentReceiver = null;
     currentReceiverName = null;
-    document.getElementById("messagesTitle").style.display = "block";
   });
-  // Initialize
+
+  messagesContainer.addEventListener(
+    "scroll",
+    throttle(() => {
+      if (messagesContainer.scrollTop < 50 && currentReceiver) {
+        loadChatHistory(currentReceiver, true);
+      }
+    }, 1000)
+  );
+
+  // Initialize users list
+  if (userList) {
+    fetch("/users")
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to fetch users");
+        return response.json();
+      })
+      .then((users) => {
+        updateUserList(users);
+      })
+      .catch((err) => {
+        console.error("Error fetching users:", err);
+      });
+  }
+
+  // Initialize WebSocket
   connectWebSocket();
 });
