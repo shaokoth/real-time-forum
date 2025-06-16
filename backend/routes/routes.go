@@ -25,13 +25,13 @@ func Routers() (*http.ServeMux, error) {
 	mux.HandleFunc("/logout", handlers.LogoutUser)
 
 	// Posts and categories can be viewed without authentication
-	mux.HandleFunc("/posts", handlers.HandlePosts)
-	mux.HandleFunc("/upload-image", handlers.HandleImageUpload)
-	mux.HandleFunc("/comments", handlers.HandleComments)
-	mux.HandleFunc("/categories", handlers.HandleGetCategories)
-	mux.HandleFunc("/users", handlers.HandleUsers)
 
 	// These endpoints require authentication
+	mux.HandleFunc("/users", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleUsers)))
+	mux.HandleFunc("/upload-image", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleImageUpload)))
+	mux.HandleFunc("/categories", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCategories)))
+	mux.HandleFunc("/comments", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleComments)))
+	mux.HandleFunc("/posts", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandlePosts)))
 	mux.HandleFunc("/ws", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleWebSocket)))
 	mux.HandleFunc("/messages", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMessages)))
 	mux.HandleFunc("/posts/like", handlers.AuthMiddleware(http.HandlerFunc(handlers.LikePostHandler)))

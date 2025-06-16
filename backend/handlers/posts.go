@@ -15,21 +15,24 @@ import (
 func HandlePosts(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		// Get all posts - no authentication required
 		var posts []models.Post
 
 		// Get category filter from query parameter
 		category := r.URL.Query().Get("category")
 
-		// Get current user if logged in
-		var currentUserUUID string
+		// Require authentication
 		cookie, err := r.Cookie("session_token")
-		if err == nil {
-			user, err := utils.GetUserFromSession(cookie.Value)
-			if err == nil {
-				currentUserUUID = user.UUID
-			}
+		if err != nil {
+			http.Error(w, "Unauthorized: No session", http.StatusUnauthorized)
+			return
 		}
+
+		user, err := utils.GetUserFromSession(cookie.Value)
+		if err != nil {
+			http.Error(w, "Unauthorized: Invalid session", http.StatusUnauthorized)
+			return
+		}
+		currentUserUUID := user.UUID
 
 		// Base query
 		query := `
@@ -68,7 +71,7 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		for rows.Next() {
 			var post models.Post
 			var categoriesStr string
-			err = rows.Scan(&post.Post_id, &post.Title, &post.Content, &post.User_uuid, &post.CreatedAt, &post.Nickname,&post.ImageUrl,
+			err = rows.Scan(&post.Post_id, &post.Title, &post.Content, &post.User_uuid, &post.CreatedAt, &post.Nickname, &post.ImageUrl,
 				&categoriesStr, &post.Likes, &post.Dislikes, &post.CommentsCount)
 			if err != nil {
 				http.Error(w, "Error parsing posts", http.StatusInternalServerError)
@@ -107,10 +110,10 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var post struct {
-			Title   string `json:"title"`
-			Content string `json:"content"`
-			Numbers []int  `json:"categories"`
-			ImageUrl string`json:"image_url"`
+			Title    string `json:"title"`
+			Content  string `json:"content"`
+			Numbers  []int  `json:"categories"`
+			ImageUrl string `json:"image_url"`
 		}
 		err = json.NewDecoder(r.Body).Decode(&post)
 		if err != nil {
@@ -144,7 +147,7 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		// Insert the post
 		result, err := tx.Exec(
 			"INSERT INTO posts (title, content, user_uuid, image_url) VALUES (?, ?, ?, ?)",
-			post.Title, post.Content, user.UUID,post.ImageUrl,
+			post.Title, post.Content, user.UUID, post.ImageUrl,
 		)
 		if err != nil {
 			http.Error(w, "Error creating post", http.StatusInternalServerError)
