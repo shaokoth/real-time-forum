@@ -20,8 +20,7 @@ CREATE TABLE IF NOT EXISTS posts (
     user_uuid TEXT NOT NULL,
     title TEXT NOT NULL,
     content TEXT NOT NULL,
-    filepath TEXT DEFAULT '',
-    filename TEXT DEFAULT '',
+    image_url TEXT DEFAULT '',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_uuid) REFERENCES users(uuid)
 );`

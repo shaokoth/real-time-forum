@@ -50,6 +50,14 @@ func HandleUsers(w http.ResponseWriter, r *http.Request) {
 			users = append(users, u)
 		}
 	}
+	for i := range users {
+		_, ok := Clients[users[i].UUID]
+		if ok {
+			users[i].IsOnline = true
+		} else {
+			users[i].IsOnline = false
+		}
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(users)

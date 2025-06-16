@@ -65,12 +65,6 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		Send:   make(chan []byte),
 	}
 
-	// Update user status to online
-	// _, err = database.Db.Exec("UPDATE users SET is_online = TRUE, last_seen = CURRENT_TIMESTAMP WHERE id = ?", client.UserID)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-
 	mu.Lock()
 	Clients[client.UserID] = client
 	mu.Unlock()
@@ -92,11 +86,6 @@ func readMessages(c *Client) {
 	defer func() {
 		mu.Lock()
 
-		// Update user status to offline
-		// _, err := database.Db.Exec("UPDATE users SET is_online = FALSE, last_seen = CURRENT_TIMESTAMP WHERE id = ?", c.UserID)
-		// if err != nil {
-		// 	log.Println(err)
-		// }
 		delete(Clients, c.UserID)
 
 		statusMsg := models.Message{

@@ -9,31 +9,47 @@
   <body>
     <!-- Navbar with login/signup buttons -->
     <div class="navbar">
-        <div class="left-section">
-            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
-            <a class="forum" href="/">REAL-TIME-FORUM</a>
+      <div class="left-section">
+        <button
+          class="theme-toggle"
+          onclick="toggleTheme()"
+          title="Toggle Theme"
+        >
+          🌓
+        </button>
+        <a class="forum" href="/">REAL-TIME-FORUM</a>
+      </div>
+      {{if .IsLoggedIn}}
+      <div class="right-section">
+        <button
+          class="add-post-btn"
+          onclick="showCreatePostForm()"
+          title="Create New Post"
+        >
+          <div class="plus-icon"></div>
+        </button>
+        <div class="dropdown">
+          <button class="dropbtn">
+            <img
+              src="static/image/user.png"
+              alt="User Icon"
+              class="user-icon"
+            />
+          </button>
+          <div class="dropdown-content">
+            <span>{{.Nickname}}</span>
+            <a href="/logout">Logout</a>
+          </div>
         </div>
-        {{if .IsLoggedIn}}
-        <div class="right-section">
-            <button class="add-post-btn" onclick="showCreatePostForm()" title="Create New Post">
-                <div class="plus-icon"></div>
-            </button>
-            <div class="dropdown">
-                <button class="dropbtn">
-                    <img src="static/image/user.png" alt="User Icon" class="user-icon">
-                </button>
-                <div class="dropdown-content">
-                    <span>{{.Nickname}}</span>
-                    <a href="/logout">Logout</a>
-                </div>
-            </div>
-        </div>
-        {{else}}
-        <div class="nav-buttons">
-            <button class="login-button" onclick="showLoginForm()">Log In</button>
-            <button class="signup-button" onclick="showSignupForm()">Sign Up</button>
-        </div>
-        {{end}}
+      </div>
+      {{else}}
+      <div class="nav-buttons">
+        <button class="login-button" onclick="showLoginForm()">Log In</button>
+        <button class="signup-button" onclick="showSignupForm()">
+          Sign Up
+        </button>
+      </div>
+      {{end}}
     </div>
 
     <!-- Homepage Content -->
@@ -108,9 +124,12 @@
                   class="input-field"
                   required
                 ></textarea>
+                <input type="file" id="postImageInput" accept="image/*">
+                <img src="" id="imagePreview" alt="Image Preview" style="max-width: 200px; max-height: 200px;display: none;"/>
                 <div id="categories-selection" class="categories-selection">
                   <!-- Categories checkboxes will be populated here -->
                 </div>
+                <br />
                 <button type="submit" id="submit-button">Create Post</button>
               </form>
               <div
@@ -282,28 +301,68 @@
         </div>
         <!-- Private Messages Section -->
         {{if .IsLoggedIn}}
-        <div class="chats">
-          <h2>Messages</h2>
-          <div id="userList" class="user-list"></div>
-          <!-- users will be populated here -->
-          <div id="chatWindow" class="chat-window hidden">
-            <div id="chatHeader" class="chat-header"></div>
-            <div id="chatAvatar" class="chat-avatar"></div>
-            <div class="chat-user-details">
-              <div id="chatUserName" class="chat-username"></div>
-              <div id="chatUserStatus" class="chat-status"></div>
+   <div class="chat-container">
+        <!-- Users List Sidebar -->
+        <div class="users-sidebar" id="usersSidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">Messages</h2>
+                <div class="search-container">
+                    <span class="search-icon">🔍</span>
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        placeholder="Search conversations..."
+                        id="searchInput"
+                    >
+                </div>
             </div>
-            <div id="messages" class="messages"></div>
-            <div class="message-input-container">
-              <input
-                type="text"
-                id="messageInput"
-                placeholder="Type a message..."
-              />
-              <button id="sendButton">Send</button>
+            <div class="user-list" id="userList">
+                <!-- Users will be populated here -->
             </div>
-          </div>
         </div>
+
+        <!-- Chat Window -->
+        <div class="chat-window" id="chatWindow">
+            <div class="empty-state" id="emptyState">
+                <div class="empty-state-content">
+                    <!-- <div class="empty-state-icon">💬</div>
+                    <h3 class="empty-state-title">Select a conversation</h3>
+                    <p>Choose a conversation from the sidebar to start messaging</p> -->
+                </div>
+            </div>
+
+            <div class="chat-header" id="chatHeader" style="display: none;">
+                <div class="chat-user-info">
+                    <button class="back-button" id="backButton">←</button>
+                    <div class="chat-avatar" id="chatAvatar"></div>
+                    <div class="chat-user-details">
+                        <div class="chat-username" id="chatUserName"></div>
+                        <div class="chat-status" id="chatUserStatus"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="messages" id="messages" style="display: none;">
+                <!-- Messages will be populated here -->
+            </div>
+
+            <div class="message-input-container" id="messageInputContainer" style="display: none;">
+                <div class="typing-status" id="typingIndicator"></div>
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        class="message-input" 
+                        placeholder="Type a message..."
+                        id="messageInput"
+                    >
+                    <button class="send-button" id="sendButton">
+                        <span>➤</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
         {{end}}
       </div>
     </div>
