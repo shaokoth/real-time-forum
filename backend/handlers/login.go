@@ -17,6 +17,11 @@ type LoginRequest struct {
 	Password   string `json:"password"`
 }
 
+type LoginResponse struct {
+	ID       string `json:"userid"`
+	Nickname string `json:"nickname"`
+}
+
 // Handles client login
 func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -73,11 +78,10 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 	})
 
-	logged, _ := json.Marshal(map[string]string{
-		"uuid":     user.UUID,
-		"nickname": user.Nickname,
-	})
-
-	w.WriteHeader(http.StatusOK)
-	w.Write(logged)
+	response := LoginResponse{
+		ID:       user.UUID,
+		Nickname: user.Nickname,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
