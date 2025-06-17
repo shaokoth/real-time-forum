@@ -55,11 +55,12 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       }),
     });
 
-    const data = await response.text();
+    const data = await response.json();
     const errorDiv = document.getElementById("login-error");
 
     if (response.ok) {
-      localStorage.setItem("CurrentUserID", data);
+      localStorage.setItem("CurrentUserID", data.userid);
+      localStorage.setItem("CurrentUserName", data.nickname)
       window.location.href = "/";
     } else {
       errorDiv.textContent = data;

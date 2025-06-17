@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const messageInput = document.getElementById("messageInput");
   const sendButton = document.getElementById("sendButton");
   const currentUserID = localStorage.getItem("CurrentUserID");
+  const currentUserName = localStorage.getItem("CurrentUserName");
+
   const chatAvatar = document.getElementById("chatAvatar");
   const chatUserName = document.getElementById("chatUserName");
   const chatUserStatus = document.getElementById("chatUserStatus");
@@ -235,7 +237,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const messageUsername = document.createElement("div");
     messageUsername.className = "message-username";
-    messageUsername.textContent = message.nickname;
+    messageUsername.textContent =
+      message.sender_id === currentUserID ? "you" : currentReceiverName;
 
     const messageContent = document.createElement("div");
     messageContent.className = "message-content";
