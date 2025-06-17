@@ -373,6 +373,16 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 	existingReaction, err := utils.GetPostReaction(user.ID, req.PostID)
 	if err == nil {
 		if existingReaction.IsLike {
+			// User liked - change to dislike
+			err = utils.UpdatePostReaction(user.ID, req.PostID, false)
+			if err != nil {
+				http.Error(w, "Failed to update reaction", http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("Like changed to dislike"))
+			return
+		} else {
 			// User already disliked - remove dislike
 			err = utils.DeletePostReaction(user.ID, req.PostID)
 			if err != nil {
@@ -382,19 +392,8 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("Dislike removed"))
 			return
-		} else {
-			// User disliked - change to like
-			err = utils.UpdatePostReaction(user.ID, req.PostID, false)
-			if err != nil {
-				http.Error(w, "Failed to update reaction", http.StatusInternalServerError)
-				return
-			}
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("like changed to dislike"))
-			return
 		}
 	}
-
 	// Add new dislike
 	err = utils.AddPostReaction(user.ID, req.PostID, false)
 	if err != nil {
