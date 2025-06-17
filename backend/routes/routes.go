@@ -19,14 +19,14 @@ func Routers() (*http.ServeMux, error) {
 	uploadServer := http.FileServer(http.Dir("./uploads/"))
 	mux.Handle("/uploads/", http.StripPrefix("/uploads/", uploadServer))
 
-	mux.HandleFunc("/", handlers.HandleHomepage)
 	mux.HandleFunc("/register", handlers.RegisterUser)
 	mux.HandleFunc("/login", handlers.HandleLogin)
 	mux.HandleFunc("/logout", handlers.LogoutUser)
-
+	
 	// Posts and categories can be viewed without authentication
-
+	
 	// These endpoints require authentication
+	mux.HandleFunc("/", handlers.HandleHomepage)
 	mux.HandleFunc("/users", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleUsers)))
 	mux.HandleFunc("/upload-image", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleImageUpload)))
 	mux.HandleFunc("/categories", handlers.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCategories)))
