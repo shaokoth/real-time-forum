@@ -61,6 +61,15 @@ $ git clone https://learn.zone01kisumu.ke/git/hilaromondi/real-time-forum.git
  ```
 * Open  your browser and go to http://localhost:8080
 
+* To use docker file, first built the image using 
+```bash
+$ docker build -t [container-name] .
+```
+* Then run the image created using 
+```bash
+$ docker run -p 8080:8080  [container-image]
+```
+
 ## Technologies Used
  * Frontend
    - HTML
