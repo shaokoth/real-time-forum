@@ -233,6 +233,10 @@ document.addEventListener("DOMContentLoaded", function () {
       message.sender_id === currentUserID ? "sent" : "received"
     }`;
 
+    const messageUsername = document.createElement("div");
+    messageUsername.className = "message-username";
+    messageUsername.textContent = message.nickname;
+
     const messageContent = document.createElement("div");
     messageContent.className = "message-content";
     messageContent.textContent = message.content;
@@ -249,6 +253,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     messageContent.appendChild(messageTime);
     messageElement.appendChild(messageContent);
+    messageElement.appendChild(messageUsername);
 
     return messageElement;
   }
