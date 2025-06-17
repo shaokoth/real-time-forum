@@ -8,13 +8,14 @@ import (
 )
 
 type Message struct {
-	ID         string    `json:"id"`
-	Content    string    `json:"content"`
-	SenderID   string    `json:"sender_id"`
-	ReceiverID string    `json:"receiver_id"`
-	CreatedAt  time.Time `json:"created_at"`
-	Type       string    `json:"type"` // message, typing, stop_typing
-	Online     bool      `json:"online"`
+	ID           string    `json:"id"`
+	Content      string    `json:"content"`
+	SenderID     string    `json:"sender_id"`
+	ReceiverID   string    `json:"receiver_id"`
+	CreatedAt    time.Time `json:"created_at"`
+	Type         string    `json:"type"` // message, typing, stop_typing
+	Online       bool      `json:"online"`
+	Nickname     string    `json:"nickname"`
 }
 
 type Reaction struct {
