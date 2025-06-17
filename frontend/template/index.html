@@ -56,12 +56,14 @@
     <div id="homepage-content" class="active">
       <div class="main-layout">
         <!-- Categories Section -->
+        {{if .IsLoggedIn}}
         <div class="categories-section">
           <h2>Categories</h2>
           <div id="categories-list" class="categories-grid">
             <!-- Categories will be populated here -->
           </div>
         </div>
+        {{end}}
 
         <!-- Posts Section -->
         <div class="posts-section">
