@@ -483,10 +483,6 @@ body {
   transform: scale(1.2);
 }
 
-.like-btn.active {
-  color: #4caf50;
-}
-
 .comment-btn {
   margin-left: auto;
   background: none;
@@ -498,12 +494,10 @@ body {
   display: flex;
   align-items: center;
   gap: 5px;
-  color: #0079d3;
 }
 
 .comment-btn:hover {
   transform: scale(1.1);
-  color: #0056b3;
 }
 
 .delete-btn {
@@ -750,7 +744,6 @@ body {
 }
 
 .comment-actions .like-btn {
-  color: #0079d3;
   margin-left: auto;
 }
 
@@ -761,7 +754,6 @@ body {
 }
 
 .comment-actions .like-btn.active {
-  color: #0079d3;
   font-weight: bold;
 }
 
