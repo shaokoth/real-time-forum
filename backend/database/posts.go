@@ -28,6 +28,5 @@ CREATE TABLE IF NOT EXISTS posts (
 	if _, err := db.Exec(query); err != nil {
 		return err
 	}
-	fmt.Println("created table posts")
 	return nil
 }

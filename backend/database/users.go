@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -24,6 +23,5 @@ func CreateUsersTable(db *sql.DB) error {
 	if _, err := db.Exec(query); err != nil {
 		return err
 	}
-	fmt.Println("[SUCCESS]: Created the users table")
 	return nil
 }

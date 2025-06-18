@@ -17,6 +17,11 @@ type LoginRequest struct {
 	Password   string `json:"password"`
 }
 
+type LoginResponse struct {
+	ID       string `json:"userid"`
+	Nickname string `json:"nickname"`
+}
+
 // Handles client login
 func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -29,7 +34,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := database.Db.QueryRow(`SELECT id,uuid, password FROM users WHERE nickname = ? OR email = ?`, creds.Identifier, creds.Identifier).Scan(&user.ID, &user.UUID, &user.Password)
+	err := database.Db.QueryRow(`SELECT id,uuid, nickname, password FROM users WHERE nickname = ? OR email = ?`, creds.Identifier, creds.Identifier).Scan(&user.ID, &user.UUID, &user.Nickname, &user.Password)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Invalid login credentials", http.StatusUnauthorized)
@@ -73,6 +78,10 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 	})
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(user.UUID))
+	response := LoginResponse{
+		ID:       user.UUID,
+		Nickname: user.Nickname,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }

@@ -62,17 +62,19 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	client := &Client{
 		UserID: user.UUID,
 		Conn:   conn,
-		Send:   make(chan []byte),
+		Send:   make(chan []byte, 256),
 	}
 
 	mu.Lock()
 	Clients[client.UserID] = client
 	mu.Unlock()
+	// log.Printf("WebSocket: User %s (%s) connected.", user.UUID, user.Nickname) 
 
-	// Broadcast status update
+	// Broadcast Online Status of the new user to everyone
 	statusMsg := models.Message{
 		Type:     "status",
 		SenderID: client.UserID,
+		Nickname: user.Nickname,
 		Online:   true,
 	}
 	broadcast <- statusMsg
@@ -134,7 +136,7 @@ func readMessages(c *Client) {
 				log.Printf("Failed to save message: %v", err)
 				continue
 			}
-			// Forward the message to the receiver
+
 			broadcast <- msg
 
 		default:

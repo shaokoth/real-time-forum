@@ -249,7 +249,7 @@ p {
 
 /* theme toggle styles */
 :root {
-  --primary-color: #ff4500;
+  --primary-color: #0079d3;
   --text-color: #333;
   --bg-color: #fff;
   --card-bg: #fff;
@@ -257,7 +257,7 @@ p {
 }
 
 [data-theme="dark"] {
-  --primary-color: #ff5722;
+  --primary-color: #4dabf7;
   --text-color: #fff;
   --bg-color: #1a1a1b;
   --card-bg: #272729;
@@ -946,7 +946,7 @@ body {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+  background: linear-gradient(135deg, #10b981, #059669);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1058,7 +1058,7 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+  background: linear-gradient(135deg, #10b981, #059669);
   display: flex;
   align-items: center;
   justify-content: center;
