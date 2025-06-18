@@ -13,9 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const chatUserStatus = document.getElementById("chatUserStatus");
   const typingIndicator = document.getElementById("typingIndicator");
   const emptyState = document.getElementById("emptyState");
-  const messageInputContainer = document.getElementById(
-    "messageInputContainer"
-  );
+  const messageInputContainer = document.getElementById("messageInputContainer");
   const searchInput = document.getElementById("searchInput");
   const backButton = document.getElementById("backButton");
   const usersSidebar = document.getElementById("usersSidebar");
@@ -26,7 +24,185 @@ document.addEventListener("DOMContentLoaded", function () {
   let typingTimeout;
   let messageOffset = 0;
   let isLoadingMessages = false;
+  let hasMoreMessages = true;
   let allUsers = [];
+  let loadingIndicator = null;
+
+  // Improved throttle function with leading and trailing execution
+  function throttle(func, limit) {
+    let inThrottle;
+    let lastFunc;
+    let lastRan;
+    return function() {
+      const context = this;
+      const args = arguments;
+      if (!inThrottle) {
+        func.apply(context, args);
+        lastRan = Date.now();
+        inThrottle = true;
+      } else {
+        clearTimeout(lastFunc);
+        lastFunc = setTimeout(function() {
+          if ((Date.now() - lastRan) >= limit) {
+            func.apply(context, args);
+            lastRan = Date.now();
+          }
+        }, limit - (Date.now() - lastRan));
+      }
+    }
+  }
+
+  // Debounce function for more sensitive operations
+  function debounce(func, wait, immediate) {
+    let timeout;
+    return function() {
+      const context = this;
+      const args = arguments;
+      const later = function() {
+        timeout = null;
+        if (!immediate) func.apply(context, args);
+      };
+      const callNow = immediate && !timeout;
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+      if (callNow) func.apply(context, args);
+    };
+  }
+
+  // Create and manage loading indicator
+  function createLoadingIndicator() {
+    if (loadingIndicator) return loadingIndicator;
+    
+    loadingIndicator = document.createElement("div");
+    loadingIndicator.className = "loading-indicator";
+    loadingIndicator.innerHTML = `
+      <div style="display: flex; justify-content: center; padding: 10px; color: #666;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 16px; height: 16px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+          <span style="font-size: 12px;">Loading messages...</span>
+        </div>
+      </div>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    `;
+    return loadingIndicator;
+  }
+
+  function showLoadingIndicator() {
+    if (!loadingIndicator && hasMoreMessages) {
+      const indicator = createLoadingIndicator();
+      messagesContainer.prepend(indicator);
+    }
+  }
+
+  function hideLoadingIndicator() {
+    if (loadingIndicator && loadingIndicator.parentNode) {
+      loadingIndicator.parentNode.removeChild(loadingIndicator);
+      loadingIndicator = null;
+    }
+  }
+
+  // Improved scroll handler with better detection
+  const handleScroll = throttle(() => {
+    if (!currentReceiver || isLoadingMessages || !hasMoreMessages) return;
+
+    const scrollTop = messagesContainer.scrollTop;
+    const scrollThreshold = 100; // Load more when within 100px of top
+
+    // Check if user scrolled near the top
+    if (scrollTop <= scrollThreshold) {
+      loadMoreMessages();
+    }
+  }, 300); // Throttle to 300ms
+
+  // Enhanced message loading function
+  function loadMoreMessages() {
+    if (isLoadingMessages || !hasMoreMessages || !currentReceiver) return;
+
+    isLoadingMessages = true;
+    showLoadingIndicator();
+
+    // Store current scroll position and height for restoration
+    const scrollHeightBefore = messagesContainer.scrollHeight;
+    const scrollTopBefore = messagesContainer.scrollTop;
+
+    fetch(`/messages?with=${currentReceiver}&offset=${messageOffset}&limit=10`)
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to fetch messages");
+        return response.json();
+      })
+      .then((messages) => {
+        hideLoadingIndicator();
+
+        if (!Array.isArray(messages)) {
+          console.error("Messages response is not an array:", messages);
+          return;
+        }
+
+        // If we got fewer than 10 messages, we've reached the end
+        if (messages.length < 10) {
+          hasMoreMessages = false;
+        }
+
+        if (messages.length === 0) {
+          return;
+        }
+
+        // Add messages to the top of the container
+        const fragment = document.createDocumentFragment();
+        messages.reverse().forEach((message) => {
+          const messageElement = createMessageElement(message);
+          fragment.appendChild(messageElement);
+        });
+
+        // Insert all messages at once for better performance
+        messagesContainer.insertBefore(fragment, messagesContainer.firstChild);
+
+        // Restore scroll position to maintain user's view
+        const scrollHeightAfter = messagesContainer.scrollHeight;
+        const heightDifference = scrollHeightAfter - scrollHeightBefore;
+        messagesContainer.scrollTop = scrollTopBefore + heightDifference;
+
+        messageOffset += messages.length;
+      })
+      .catch((error) => {
+        console.error("Error loading more messages:", error);
+        hideLoadingIndicator();
+        // Show error message to user
+        showErrorMessage("Failed to load messages. Please try again.");
+      })
+      .finally(() => {
+        isLoadingMessages = false;
+      });
+  }
+
+  function showErrorMessage(message) {
+    const errorDiv = document.createElement("div");
+    errorDiv.className = "error-message";
+    errorDiv.style.cssText = `
+      background: #fee; 
+      color: #c33; 
+      padding: 8px 12px; 
+      margin: 8px; 
+      border-radius: 4px; 
+      text-align: center; 
+      font-size: 12px;
+      border: 1px solid #fcc;
+    `;
+    errorDiv.textContent = message;
+    messagesContainer.prepend(errorDiv);
+    
+    // Remove error message after 3 seconds
+    setTimeout(() => {
+      if (errorDiv.parentNode) {
+        errorDiv.parentNode.removeChild(errorDiv);
+      }
+    }, 3000);
+  }
 
   function connectWebSocket() {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -103,7 +279,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
-    // Update chat header if this is the current conversation
     if (currentReceiver === userId) {
       chatUserStatus.textContent = isOnline ? "Online" : "Offline";
       const chatStatusIndicator = chatAvatar.querySelector(".status-indicator");
@@ -124,15 +299,15 @@ document.addEventListener("DOMContentLoaded", function () {
     const statusClass = user.isOnline ? "online" : "offline";
 
     userDiv.innerHTML = `
-                    <div class="user-avatar">
-                        ${user.nickname.charAt(0).toUpperCase()}
-                        <div class="status-indicator ${statusClass}"></div>
-                    </div>
-                    <div class="user-info">
-                        <div class="user-name">${user.nickname}</div>
-                        <div class="user-status">${onlineStatus}</div>
-                    </div>
-                `;
+      <div class="user-avatar">
+        ${user.nickname.charAt(0).toUpperCase()}
+        <div class="status-indicator ${statusClass}"></div>
+      </div>
+      <div class="user-info">
+        <div class="user-name">${user.nickname}</div>
+        <div class="user-status">${onlineStatus}</div>
+      </div>
+    `;
 
     userDiv.onclick = () => {
       openChat(user.user_uuid, user.nickname, onlineStatus);
@@ -145,6 +320,7 @@ document.addEventListener("DOMContentLoaded", function () {
     currentReceiver = userId;
     currentReceiverName = userName;
     messageOffset = 0;
+    hasMoreMessages = true; // Reset for new chat
 
     // Update active user in sidebar
     document.querySelectorAll(".user-item").forEach((item) => {
@@ -156,11 +332,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Update chat header
     chatAvatar.innerHTML = `
-                    ${userName.charAt(0).toUpperCase()}
-                    <div class="status-indicator ${
-                      status === "Online" ? "online" : "offline"
-                    }"></div>
-                `;
+      ${userName.charAt(0).toUpperCase()}
+      <div class="status-indicator ${
+        status === "Online" ? "online" : "offline"
+      }"></div>
+    `;
     chatUserName.textContent = userName;
     chatUserStatus.textContent = status;
 
@@ -175,18 +351,20 @@ document.addEventListener("DOMContentLoaded", function () {
       usersSidebar.classList.add("hidden");
     }
 
-    // Load chat history
-    loadChatHistory(currentReceiver, false);
+    // Load initial chat history
+    loadInitialChatHistory(currentReceiver);
 
     // Focus on input
     messageInput.focus();
   }
 
-  function loadChatHistory(otherUserID, append = false) {
+  function loadInitialChatHistory(otherUserID) {
     if (isLoadingMessages) return;
 
     isLoadingMessages = true;
-    fetch(`/messages?with=${otherUserID}&offset=${messageOffset}`)
+    messagesContainer.innerHTML = "";
+
+    fetch(`/messages?with=${otherUserID}&offset=0&limit=10`)
       .then((response) => {
         if (!response.ok) throw new Error("Failed to fetch messages");
         return response.json();
@@ -197,66 +375,92 @@ document.addEventListener("DOMContentLoaded", function () {
           return;
         }
 
-        if (!append) {
-          messagesContainer.innerHTML = "";
+        if (messages.length < 10) {
+          hasMoreMessages = false;
         }
-
-        const scrollPositionBefore = messagesContainer.scrollHeight;
 
         messages.reverse().forEach((message) => {
           const messageElement = createMessageElement(message);
-          if (append) {
-            messagesContainer.prepend(messageElement);
-          } else {
-            messagesContainer.appendChild(messageElement);
-          }
+          messagesContainer.appendChild(messageElement);
         });
 
-        if (append) {
-          messagesContainer.scrollTop =
-            messagesContainer.scrollHeight - scrollPositionBefore;
-        } else {
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        messageOffset += 10;
+        // Scroll to bottom for initial load
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        messageOffset = messages.length;
       })
       .catch((error) => {
         console.error("Error loading chat history:", error);
+        showErrorMessage("Failed to load chat history.");
       })
       .finally(() => {
         isLoadingMessages = false;
       });
   }
 
+  // Modified createMessageElement function to include sender in message content
   function createMessageElement(message) {
     const messageElement = document.createElement("div");
-    messageElement.className = `message ${
-      message.sender_id === currentUserID ? "sent" : "received"
-    }`;
+    const isSentByCurrentUser = message.sender_id === currentUserID;
+    messageElement.className = `message ${isSentByCurrentUser ? "sent" : "received"}`;
 
-    const messageUsername = document.createElement("div");
-    messageUsername.className = "message-username";
-    messageUsername.textContent =
-      message.sender_id === currentUserID ? "you" : currentReceiverName;
-
+    // Get sender name
+    const senderName = isSentByCurrentUser ? currentUserName : currentReceiverName;
+    
+    // Create the main message content container
     const messageContent = document.createElement("div");
     messageContent.className = "message-content";
-    messageContent.textContent = message.content;
 
+    // Create sender name element (part of message content now)
+    const senderElement = document.createElement("div");
+    senderElement.className = "message-sender";
+    senderElement.textContent = senderName;
+    senderElement.style.cssText = `
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: ${isSentByCurrentUser ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)'};
+      opacity: 0.9;
+    `;
+
+    // Create message text element
+    const messageText = document.createElement("div");
+    messageText.className = "message-text";
+    messageText.textContent = message.content;
+    messageText.style.cssText = `
+      margin-bottom: 4px;
+      line-height: 1.4;
+      word-wrap: break-word;
+    `;
+
+    // Create timestamp element
     const messageTime = document.createElement("div");
     messageTime.className = "message-time";
-    messageTime.textContent = new Date(message.created_at).toLocaleTimeString(
-      [],
-      {
-        hour: "2-digit",
-        minute: "2-digit",
-      }
-    );
+    messageTime.textContent = new Date(message.created_at).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    messageTime.style.cssText = `
+      font-size: 0.65rem;
+      opacity: 0.7;
+      text-align: ${isSentByCurrentUser ? 'right' : 'left'};
+      margin-top: 2px;
+      color: ${isSentByCurrentUser ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)'};
+    `;
 
+    // Assemble the message content
+    messageContent.appendChild(senderElement);
+    messageContent.appendChild(messageText);
     messageContent.appendChild(messageTime);
+
+    // Add the content to the message element
     messageElement.appendChild(messageContent);
-    messageElement.appendChild(messageUsername);
+
+    // Add some additional styling to the message element
+    messageElement.style.cssText = `
+      margin-bottom: 12px;
+      max-width: 70%;
+      ${isSentByCurrentUser ? 'margin-left: auto;' : 'margin-right: auto;'}
+    `;
 
     return messageElement;
   }
@@ -287,7 +491,6 @@ document.addEventListener("DOMContentLoaded", function () {
     socket.send(JSON.stringify(message));
     messageInput.value = "";
 
-    // Stop typing indicator
     socket.send(
       JSON.stringify({
         type: "stop_typing",
@@ -295,7 +498,6 @@ document.addEventListener("DOMContentLoaded", function () {
       })
     );
 
-    // Optimistically show the message
     displayMessage({
       sender_id: currentUserID,
       receiver_id: currentReceiver,
@@ -311,13 +513,22 @@ document.addEventListener("DOMContentLoaded", function () {
     const typingDiv = document.createElement("div");
     typingDiv.className = "typing-indicator";
     typingDiv.innerHTML = `
-                    <div class="typing-dots">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                    </div>
-                    <span style="font-size: 0.75rem; color: var(--gray-500);">Typing...</span>
-                `;
+      <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f0f0f0; border-radius: 18px; margin: 8px 0; max-width: 70%;">
+        <div style="font-size: 0.75rem; font-weight: 600; color: rgba(0, 0, 0, 0.7);">${currentReceiverName}</div>
+        <div class="typing-dots" style="display: flex; gap: 2px;">
+          <div class="typing-dot" style="width: 4px; height: 4px; background: #999; border-radius: 50%; animation: typing 1.4s infinite;"></div>
+          <div class="typing-dot" style="width: 4px; height: 4px; background: #999; border-radius: 50%; animation: typing 1.4s infinite 0.2s;"></div>
+          <div class="typing-dot" style="width: 4px; height: 4px; background: #999; border-radius: 50%; animation: typing 1.4s infinite 0.4s;"></div>
+        </div>
+        <span style="font-size: 0.65rem; color: rgba(0, 0, 0, 0.5);">typing...</span>
+      </div>
+      <style>
+        @keyframes typing {
+          0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+          30% { transform: translateY(-8px); opacity: 1; }
+        }
+      </style>
+    `;
 
     messagesContainer.appendChild(typingDiv);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -330,19 +541,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function throttle(func, limit) {
-    let inThrottle;
-    return function () {
-      if (!inThrottle) {
-        func.apply(this, arguments);
-        inThrottle = true;
-        setTimeout(() => (inThrottle = false), limit);
-      }
-    };
-  }
-
   // Event Listeners
-  searchInput.addEventListener("input", renderFilteredUsers);
+  searchInput.addEventListener("input", debounce(renderFilteredUsers, 300));
 
   messageInput.addEventListener("input", () => {
     if (!currentReceiver) return;
@@ -382,16 +582,13 @@ document.addEventListener("DOMContentLoaded", function () {
     messageInputContainer.style.display = "none";
     currentReceiver = null;
     currentReceiverName = null;
+    messageOffset = 0;
+    hasMoreMessages = true;
+    hideLoadingIndicator();
   });
 
-  messagesContainer.addEventListener(
-    "scroll",
-    throttle(() => {
-      if (messagesContainer.scrollTop < 50 && currentReceiver) {
-        loadChatHistory(currentReceiver, true);
-      }
-    }, 1000)
-  );
+  // Improved scroll event listener
+  messagesContainer.addEventListener("scroll", handleScroll);
 
   // Initialize users list
   if (userList) {
