@@ -213,16 +213,6 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	existingReaction, err := utils.GetCommentReaction(user.ID, req.CommentID)
 	if err == nil {
 		if existingReaction.IsLike {
-			// User already disliked - remove dislike
-			err = utils.DeleteCommentReaction(user.ID, req.CommentID)
-			if err != nil {
-				http.Error(w, "Failed to remove dislike", http.StatusInternalServerError)
-				return
-			}
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("Dislike removed"))
-			return
-		} else {
 			// User disliked - change to like
 			err = utils.UpdateCommentReaction(user.ID, req.CommentID, false)
 			if err != nil {
@@ -232,9 +222,18 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("Like changed to dislike"))
 			return
+		} else {
+			// User already disliked - remove dislike
+			err = utils.DeleteCommentReaction(user.ID, req.CommentID)
+			if err != nil {
+				http.Error(w, "Failed to remove dislike", http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("Dislike removed"))
+			return
 		}
 	}
-
 	// Add new like
 	err = utils.AddCommentReaction(user.ID, req.CommentID, false)
 	if err != nil {
