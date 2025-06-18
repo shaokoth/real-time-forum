@@ -68,7 +68,7 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	mu.Lock()
 	Clients[client.UserID] = client
 	mu.Unlock()
-	log.Printf("WebSocket: User %s (%s) connected.", user.UUID, user.Nickname) // Log user nickname
+	// log.Printf("WebSocket: User %s (%s) connected.", user.UUID, user.Nickname) 
 
 	// Broadcast Online Status of the new user to everyone
 	statusMsg := models.Message{
@@ -136,19 +136,6 @@ func readMessages(c *Client) {
 				log.Printf("Failed to save message: %v", err)
 				continue
 			}
-
-			// var nickname string
-
-			// err := database.Db.QueryRow("SELECT nickname FROM users WHERE uuid = ?", msg.ReceiverID).Scan(&nickname)
-			// if err != nil {
-			// 	if err == sql.ErrNoRows {
-			// 		fmt.Println("No user found with the given ID")
-			// 		fmt.Println(err)
-			// 	} else {
-			// 		fmt.Println("The error:", err)
-			// 	}
-			// 	return
-			// }
 
 			broadcast <- msg
 
