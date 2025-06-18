@@ -31,10 +31,14 @@ function displayComments(postId, comments) {
             </div>
             <div class="comment-content">${comment.content}</div>
             <div class="comment-actions">
-                <button class="like-btn ${comment.UserLiked === 1 ? 'active' : ''}" onclick="handleCommentLike(${comment.comment_id})">
-                    <span class="emoji">👍</span>
-                    <span class="like-count">${comment.likes}</span>
-                </button>
+            <button class="like-btn ${comment.UserLiked === 1 ? 'active' : ''}" onclick="handleCommentLike(${comment.comment_id})">
+            <span class="emoji">👍</span>
+            <span class="like-count">${comment.likes}</span>
+            </button>                                        
+            <button class="dislike-btn ${comment.UserLiked === -1 ? 'active' : ''}" onclick="handleCommentDislike(${comment.comment_id})">
+           <span class="emoji">👎</span>
+           <span class="dislike-count">${comment.dislikes}</span>
+           </button>
             </div>
         `;
         commentsContainer.appendChild(commentElement);
