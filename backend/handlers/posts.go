@@ -48,14 +48,21 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		`
 
 		// Add category filter if specified
-		if category != "" {
+		if category == "ReactedPosts" {
+			query += `
+			INNER JOIN post_likes pl ON p.post_id = pl.post_id
+			WHERE pl.user_id = ?
+		`
+		} else if category != "" {
 			query += ` WHERE pc.name = ?`
 		}
 
 		query += ` GROUP BY p.post_id ORDER BY p.created_at DESC`
 
 		var rows *sql.Rows
-		if category != "" {
+		if category == "ReactedPosts" {
+			rows, err = database.Db.Query(query, user.ID)
+		} else if category != "" {
 			rows, err = database.Db.Query(query, category)
 		} else {
 			rows, err = database.Db.Query(query)
