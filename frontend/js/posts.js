@@ -34,6 +34,21 @@ function displayCategories(categories) {
   };
   categoriesList.appendChild(allCategoriesElement);
 
+  const reactedPostsElement = document.createElement("div");
+  reactedPostsElement.className = "category-card";
+  reactedPostsElement.innerHTML = `<h3>Reacted Posts</h3>`;
+  reactedPostsElement.onclick = () => {
+    document.querySelectorAll(".category-card").forEach((card) =>
+      card.classList.remove("active")
+    );
+    reactedPostsElement.classList.add("active");
+    currentCategory = "ReactedPosts";
+    fetchPosts();
+  };
+  categoriesList.appendChild(reactedPostsElement);
+
+
+
   categories.forEach((category) => {
     const categoryElement = document.createElement("div");
     categoryElement.className = "category-card";
@@ -63,6 +78,17 @@ async function fetchPosts() {
     const data = await response.json();
     currentUserUUID = data.current_user_uuid;
     displayPosts(data.posts);
+    const filterInfo = document.getElementById("post-filter-info");
+    if (filterInfo) {
+      if (currentCategory === "ReactedPosts") {
+        filterInfo.textContent =
+          "Showing posts you've reacted to (liked or disliked)";
+      } else if (currentCategory) {
+        filterInfo.textContent = `Showing posts in category: ${currentCategory}`;
+      } else {
+        filterInfo.textContent = "Showing all posts";
+      }
+    }
   } catch (error) {
     console.error("Error fetching posts:", error);
   }
