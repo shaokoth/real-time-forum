@@ -1,4 +1,50 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // Add notification styles
+  const notificationStyles = document.createElement('style');
+  notificationStyles.textContent = `
+  .notification-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #ff4444;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    animation: pulse 2s infinite;
+  }
+  
+  .notification-dot {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: #ff4444;
+    border-radius: 50%;
+    width: 8px;
+    height: 8px;
+    border: 1px solid white;
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+  
+  .user-avatar {
+    position: relative;
+  }
+`;
+  document.head.appendChild(notificationStyles);
+
   const userList = document.getElementById("userList");
   const chatWindow = document.getElementById("chatWindow");
   const chatHeader = document.getElementById("chatHeader");
@@ -27,6 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let hasMoreMessages = true;
   let allUsers = [];
   let loadingIndicator = null;
+  let unreadMessages = new Map(); // Track unread messages per user
 
   // Improved throttle function with leading and trailing execution
   function throttle(func, limit) {
@@ -322,6 +369,9 @@ document.addEventListener("DOMContentLoaded", function () {
     messageOffset = 0;
     hasMoreMessages = true; // Reset for new chat
 
+    // Clear unread messages for this user
+    clearUnreadMessages(userId);
+
     // Update active user in sidebar
     document.querySelectorAll(".user-item").forEach((item) => {
       item.classList.remove("active");
@@ -474,6 +524,61 @@ document.addEventListener("DOMContentLoaded", function () {
       const messageElement = createMessageElement(message);
       messagesContainer.appendChild(messageElement);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Add notification logic for messages not from current chat
+    if (message.sender_id !== currentUserID && message.sender_id !== currentReceiver) {
+      addUnreadMessage(message.sender_id);
+      updateNotificationBadge(message.sender_id);
+    }
+  }
+
+  function addUnreadMessage(userId) {
+    const currentCount = unreadMessages.get(userId) || 0;
+    unreadMessages.set(userId, currentCount + 1);
+  }
+
+  function clearUnreadMessages(userId) {
+    unreadMessages.delete(userId);
+    removeNotificationBadge(userId);
+  }
+
+  function updateNotificationBadge(userId) {
+    const userItem = document.querySelector(`[data-user-id="${userId}"]`);
+    if (!userItem) return;
+    
+    const userAvatar = userItem.querySelector('.user-avatar');
+    const existingBadge = userAvatar.querySelector('.notification-badge, .notification-dot');
+    
+    if (existingBadge) {
+      existingBadge.remove();
+    }
+    
+    const unreadCount = unreadMessages.get(userId) || 0;
+    if (unreadCount > 0) {
+      const badge = document.createElement('div');
+      
+      if (unreadCount > 9) {
+        badge.className = 'notification-badge';
+        badge.textContent = '9+';
+      } else if (unreadCount > 1) {
+        badge.className = 'notification-badge';
+        badge.textContent = unreadCount.toString();
+      } else {
+        badge.className = 'notification-dot';
+      }
+      
+      userAvatar.appendChild(badge);
+    }
+  }
+
+  function removeNotificationBadge(userId) {
+    const userItem = document.querySelector(`[data-user-id="${userId}"]`);
+    if (!userItem) return;
+    
+    const badge = userItem.querySelector('.notification-badge, .notification-dot');
+    if (badge) {
+      badge.remove();
     }
   }
 
